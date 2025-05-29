@@ -411,7 +411,7 @@ def do_photometry(cfg):
     logging.info('Photometry')
     
     # Can't find a way around actually copying the file into the directory
-    shutil.copy(cfg['codedir'] +'/photometryparams/default.psfex','default.psfex')
+    shutil.copy(os.path.expanduser(cfg['codedir']) +'/photometryparams/default.psfex','default.psfex')
     
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
     files = glob.glob('outputdirectory/*.fits')
