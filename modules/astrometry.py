@@ -224,9 +224,9 @@ def run_astrometry_net(file, codedir):
 
     # run source extractor on image
     tempprocess = subprocess.Popen(
-        ['source-extractor', astromfitsfile, '-c', codedir +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(codedir +'/photometryparams/default.paramastrom'),
+        ['source-extractor', astromfitsfile, '-c', os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramastrom'),
          '-CATALOG_NAME', str(tempdir + '/test.cat'), '-SATUR_LEVEL', str(image_saturation_level), '-GAIN', str(gain), '-READNOISE', str(rdnoise), '-BACKPHOTO_TYPE','LOCAL', '-DETECT_THRESH', str(1.5), '-ANALYSIS_THRESH',str(1.5),
-         '-SEEING_FWHM', str(2.0), '-FILTER_NAME', str(codedir +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')], stdin=subprocess.PIPE,
+         '-SEEING_FWHM', str(2.0), '-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')], stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, bufsize=0)
     tempprocess.wait() 
         
@@ -247,15 +247,15 @@ def run_astrometry_net(file, codedir):
         minarea= 1.0 * psfarea    
         backsize= 4 * fwhmpixels
     
-        tempprocess=subprocess.Popen(['source-extractor' , astromfitsfile ,'-c',codedir +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(codedir +'/photometryparams/default.paramprepsx'), '-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(image_saturation_level) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(codedir +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+        tempprocess=subprocess.Popen(['source-extractor' , astromfitsfile ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx'), '-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(image_saturation_level) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
         
-        tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat', '-c',codedir +'/photometryparams/default.psfex','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+        tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat', '-c',os.path.expanduser(codedir) +'/photometryparams/default.psfex','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
         
         photapertures=max(3.0/float(pixscale),3)
         
-        tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', astromfitsfile ,'-c',codedir +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(codedir +'/photometryparams/default.paramactualpsx'),'-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(image_saturation_level) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(codedir +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+        tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', astromfitsfile ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx'),'-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(image_saturation_level) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
 
         # pick up the catalog again and trim it up
