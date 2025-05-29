@@ -225,7 +225,7 @@ def collect_files(cfg, args):
 def check_and_deflate(files, cfg, args):
     logging.info('Checking files')
     # Get the subprocess script into the directory
-    shutil.copy(cfg['codedir'] +'/subprocesses/filechecker.py', os.getcwd() +'/filechecker.py')
+    shutil.copy(os.path.expanduser(cfg['codedir']) +'/subprocesses/filechecker.py', os.getcwd() +'/filechecker.py')
     wait_for_resources()
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
