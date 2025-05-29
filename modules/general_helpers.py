@@ -374,7 +374,7 @@ def check_that_file_opens(file, python_command='/usr/bin/python3'):
                                       Prints an error message and attempts to delete the problematic file.
     """
     try:
-        output=subprocess.check_output([python_command,'subprocesses/filechecker.py', file], text=True)
+        output=subprocess.check_output([python_command,'filechecker.py', file], text=True)
         if 'safely opened' in output:
             logging.info (output)
             return output
