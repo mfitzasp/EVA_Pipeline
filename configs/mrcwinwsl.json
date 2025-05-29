@@ -1,0 +1,23 @@
+{
+  "memmapdrive": "sdc",
+  "archivedrive": "sdc",
+  "workdrive": "sdc",
+  "memmappath": "/mnt/q/pipememmaptemp",
+  "working_directory" : "/mnt/a/EVAworkspace",
+  "copy_to_a_local_output_folder": true,
+  "local_output_folder": "/mnt/a/EVAreducedfiles",
+  "localptrarchivefolder": "/mnt/a/localptrarchive",
+  "ingestion_output_folder": "/mnt/a/localptrarchive/Ingestion",
+  "shortexposure_output_folder": "/mnt/a/EVAreducedfiles/ShortExposures",
+  "largedataset_output_folder": "/mnt/a/EVAreducedfiles/LargeDataSets",
+  "calibration_directory": "/mnt/a/localptrarchive/calibrations",
+  "codedir": "/mnt/c/Users/eng/Documents/Github/ptrpipeline",
+  "multiprocess": {
+    "bias_dark_flat_bpm": true,
+    "download_files": true,
+    "file_checking": true,
+    "de_fz_file": true
+  },
+  "hold_all_calibrations_in_memory": false,
+  "python_command": "python"
+}

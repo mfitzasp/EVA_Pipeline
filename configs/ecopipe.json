@@ -1,0 +1,23 @@
+{
+  "memmapdrive": "nvme0n1p2",
+  "archivedrive": "md0",
+  "workdrive": "md0",
+  "memmappath": "/mnt/SpeedDrive/pipememmaptemp",
+  "working_directory" : "/mnt/PipeArchive/EVAworkspace",
+  "copy_to_a_local_output_folder": true,
+  "local_output_folder": "/mnt/PipeArchive/EVAreducedfiles",
+  "localptrarchivefolder": "/mnt/PipeArchive/localptrarchive",
+  "ingestion_output_folder": "/mnt/PipeArchive/Ingestion",
+  "shortexposure_output_folder": "/mnt/PipeArchive/EVAreducedfiles/ShortExposures",
+  "largedataset_output_folder": "/mnt/PipeArchive/EVAreducedfiles/LargeDataSets",
+  "calibration_directory": "/mnt/PipeArchive/localptrarchive/calibrations",
+  "codedir": "/home/ecopipeline/PycharmProjects/ptrpipeline",
+  "multiprocess": {
+    "bias_dark_flat_bpm": true,
+    "download_files": true,
+    "file_checking": true,
+    "de_fz_file": true
+  },
+  "hold_all_calibrations_in_memory": false,
+  "python_command": "/usr/bin/python3"
+}
