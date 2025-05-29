@@ -11,7 +11,7 @@
   "shortexposure_output_folder": "/mnt/PipeArchive/EVAreducedfiles/ShortExposures",
   "largedataset_output_folder": "/mnt/PipeArchive/EVAreducedfiles/LargeDataSets",
   "calibration_directory": "/mnt/PipeArchive/localptrarchive/calibrations",
-  "codedir": "/home/ecopipeline/PycharmProjects/ptrpipeline",
+  "codedir": "/home/ecopipeline/PycharmProjects/EVA_pipeline",
   "multiprocess": {
     "bias_dark_flat_bpm": true,
     "download_files": true,
