@@ -59,14 +59,14 @@ def run_source_extractor(file, codedir):
     minarea= 1.0 * psfarea    
     backsize= 4 * fwhmpixels
     
-    print ('source-extractor', file, '-c', codedir +'/photometryparams/default.sexfull',
+    print ('source-extractor', file, '-c', os.path.expanduser(codedir) +'/photometryparams/default.sexfull',
      '-CATALOG_NAME', str(tempdir + '/test.cat'), '-SATUR_LEVEL', str(saturlevel), '-GAIN', str(gain), '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea),'-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),
-     '-SEEING_FWHM', str(seeingfwhm), '-PHOT_APERTURES', str(photapertures), '-FILTER_NAME', str(codedir +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'))
+     '-SEEING_FWHM', str(seeingfwhm), '-PHOT_APERTURES', str(photapertures), '-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'))
 
     tempprocess = subprocess.Popen(
-        ['source-extractor', file, '-c', codedir +'/photometryparams/default.sexfull',
+        ['source-extractor', file, '-c', os.path.expanduser(codedir) +'/photometryparams/default.sexfull',
          '-CATALOG_NAME', str(tempdir + '/test.cat'), '-SATUR_LEVEL', str(saturlevel), '-GAIN', str(gain), '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea),'-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),
-         '-SEEING_FWHM', str(seeingfwhm), '-PHOT_APERTURES', str(photapertures), '-FILTER_NAME', str(codedir +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(codedir +'/photometryparams/default.paramsek')], stdin=subprocess.PIPE,
+         '-SEEING_FWHM', str(seeingfwhm), '-PHOT_APERTURES', str(photapertures), '-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramsek')], stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, bufsize=0)
     tempprocess.wait()
 
@@ -143,10 +143,10 @@ def run_pre_psfex(file, codedir):
     minarea= 1.0 * psfarea    
     backsize= 4 * fwhmpixels
 
-    tempprocess=subprocess.Popen(['source-extractor' , file ,'-c',codedir +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(saturlevel) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(codedir +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(codedir +'/photometryparams/default.paramprepsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    tempprocess=subprocess.Popen(['source-extractor' , file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(saturlevel) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
 
-    tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir),'-PARAMETERS_NAME',  str(codedir +'/photometryparams/default.psfex')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.psfex')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
 
 def run_actual_psfex(file, codedir):
@@ -171,7 +171,7 @@ def run_actual_psfex(file, codedir):
     
     tempdir=file.replace('.','d')
     
-    tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', file ,'-c',codedir +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(3), '-ANALYSIS_THRESH',str(3), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(saturlevel) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(codedir +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(codedir +'/photometryparams/default.paramactualpsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(3), '-ANALYSIS_THRESH',str(3), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(saturlevel) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
     
     shutil.copy(str(tempdir+'/psf.cat'), file.replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.fullpsx'))
