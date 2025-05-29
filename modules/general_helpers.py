@@ -46,8 +46,32 @@ import json
 import platform
 import logging
 
+# def load_config(pipeid, local_or_online):
+#     with open(f"configs/{pipeid}.json") as f:
+#         cfg = json.load(f)
+
+#     if platform.system() == "Linux" and  os.path.exists("~/.bash_profile"):
+#         # inject environment variables from bash_profile
+#         with open(os.path.expanduser("~/.bash_profile")) as f:
+#             for line in f:
+#                 if line.startswith("export "):
+#                     k, v = line[len("export "):].strip().split("=", 1)
+#                     os.environ[k] = v
+
+#     return {
+#         **cfg,
+#         "homedir": os.path.expanduser("~"),
+#         # …
+#     }
+
 def load_config(pipeid, local_or_online):
-    with open(f"configs/{pipeid}.json") as f:
+    
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    config_path  = os.path.join(project_root, "configs", f"{pipeid}.json")
+    
+    # with open(f"configs/{pipeid}.json") as f:
+    #     cfg = json.load(f)
+    with open(config_path) as f:
         cfg = json.load(f)
 
     if platform.system() == "Linux" and  os.path.exists("~/.bash_profile"):
