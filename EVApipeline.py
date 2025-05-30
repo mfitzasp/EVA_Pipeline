@@ -460,7 +460,8 @@ def do_archive(cfg):
 def main():    
     
     # Sample commands
-    # python3 EVApipeline_fresh.py 20250101 lco online na na mono ecopipe         << A small set of LCO files that do not smartstack but download from LCO
+    # python3 EVApipeline.py 20250101 lco online na na mono ecopipe         << A small set of LCO files that do not smartstack but download from LCO
+    # python3 EVApipeline.py localfolder aro1 local na na mono ecopipe     << Run a set of files in the local folder
     
     args = parse_args()
     setup_logging()
