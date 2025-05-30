@@ -396,6 +396,7 @@ def construct_images(headers, human_names, cfg, args, base):
     wait_for_resources()
     # Final smart-stack image construction
     fits_ss = glob.glob('sstacksdirectory/*.fits')
+    
     n2 = max(1, min(math.floor(cpu*0.25), len(fits_ss)))
     with Pool(n2) as p:
         p.map(multiprocess_final_image_construction_smartstack, fits_ss)
@@ -403,6 +404,8 @@ def construct_images(headers, human_names, cfg, args, base):
     # Previews
     wait_for_resources()
     previews = glob.glob('outputdirectory/*.fits')
+    # don't make preview jpgs of variance frames
+    previews = [f for f in previews if not os.path.basename(f).startswith('variance_')]
     n3 = max(1, min(math.floor(cpu*0.25), len(previews)))
     with Pool(n3) as p:
         p.map(multiprocess_preview_images, previews)
