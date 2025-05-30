@@ -415,6 +415,8 @@ def do_photometry(cfg):
     
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
     files = glob.glob('outputdirectory/*.fits')
+    # don't photometer variance frames
+    files = [f for f in files if not os.path.basename(f).startswith('variance_')]
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
     with Pool(n) as p:
