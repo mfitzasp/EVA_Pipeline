@@ -542,7 +542,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
                 biasdark_file=calibration_directory + '/' + newheader['INSTRUME'] + '/' + newheader['TELID'] +'_' + newheader['INSTRUME'] + '_broadbandssBIASDARK_master_bin1.npy'
            
             for file in chunk_of_list:
-                procs.append(subprocess.Popen(['python3',codedir +'/subprocesses/reprojectprocess.py'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0))
+                procs.append(subprocess.Popen(['python3',os.path.expanduser(codedir) +'/subprocesses/reprojectprocess.py'],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0))
                 pickle.dump([file.replace('.npy','.fits'),counter,wcs_out,shape_out,readnoise_variance_file, bias_file, biasdark_file, telescope == 'lco' ], procs[proccounter].stdin)
                 counter=counter+1
                 proccounter=proccounter+1
