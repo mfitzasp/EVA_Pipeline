@@ -67,9 +67,10 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
     if not os.path.exists(relevant_archive_folder):
         os.makedirs(relevant_archive_folder , mode=0o777)
 
+    print (file)
+
     try:
-        
-        # For FITS files, we are only going to upload the BZESK file to the archive, even though we do upload dataproducts from the component files    
+                # For FITS files, we are only going to upload the BZESK file to the archive, even though we do upload dataproducts from the component files    
         if ('BZESK-' in file) and "lcogt" in str(tempheader['ORIGIN']).lower():
           logging.info ("not reuploading an individual BZESK for an original LCO file: " + str(file))  
          
@@ -106,6 +107,7 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
     tempfilename = file.replace('outputdirectory', 'photometry').replace('.fits', '.sek').replace('EVA-',
                                                                                                   'sekphot-').replace(
         'SmSTACK-', 'sekphotSmSTACK-').replace('LoSTACK-', 'sekphotLoSTACK-')
+                                                                                                  
     if os.path.exists(tempfilename):
         headerdict['RLEVEL'] = 82
         try:

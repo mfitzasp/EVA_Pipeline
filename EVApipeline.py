@@ -449,13 +449,17 @@ def do_archive(cfg):
     logging.info('Archive preparation')
     wait_for_diskspace(cfg['working_directory'], 0.9)
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
-    files = glob.glob('outputdirectory/*.fits')
+    files = glob.glob('outputdirectory/*.fit*')
     tasks = [[f, cfg['largedataset_output_folder'], cfg['shortexposure_output_folder'], cfg['ingestion_output_folder']]
              for f in files]
-    cpu = os.cpu_count() or 1
-    n = max(1, min(math.floor(cpu*0.25), len(tasks)))
-    with Pool(n) as p:
-        p.starmap(archive_preparer, tasks)
+    # cpu = os.cpu_count() or 1
+    # n = max(1, min(math.floor(cpu*0.25), len(tasks)))
+    # with Pool(n) as p:
+    #     p.starmap(archive_preparer, tasks)
+    
+    for i, args in enumerate(tasks, start=1):
+        print(f"Processing {i}/{len(tasks)}: {args[0]}")
+        archive_preparer(*args)
 
 def main():    
     
@@ -493,6 +497,7 @@ def main():
     do_banzai_file_type(cfg, args.telescope)
         
     do_archive(cfg)
+    
     cleanup_and_exit(os.path.expanduser('~'), base)
 
 

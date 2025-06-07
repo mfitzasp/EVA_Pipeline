@@ -70,10 +70,10 @@ def run_source_extractor(file, codedir):
         stdout=subprocess.PIPE, bufsize=0)
     tempprocess.wait()
 
-    shutil.copy(str(tempdir+'/test.cat'), file.replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.fullsek'))
+    shutil.copy(str(tempdir+'/test.cat'), file.replace('outputdirectory','fullphotcatalogues').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.fullsek'))
 
-    with open(file.replace('EVA-','seaphot-').replace('SmSTACK-','seaphotSmSTACK-').replace('LoSTACK-','seaphotLoSTACK-').replace('.fits','.sea'),'w') as q:
-        with open(file.replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.sek'),'w') as p:
+    with open(file.replace('outputdirectory','photometry').replace('EVA-','seaphot-').replace('SmSTACK-','seaphotSmSTACK-').replace('LoSTACK-','seaphotLoSTACK-').replace('.fits','.sea'),'w') as q:
+        with open(file.replace('outputdirectory','photometry').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.sek'),'w') as p:
             with open(str(tempdir+'/test.cat'), 'r') as f:
                 p.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
                 q.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
@@ -83,7 +83,7 @@ def run_source_extractor(file, codedir):
                         splitline=line.split(' ')
                         splitline=[i for i in splitline if i]
                         
-                        # First check it rises above S/N = 30
+                        # First check it rises above S/N = 10
                         if float(splitline[7])/float(splitline[8]) > 10:
                             # Check that is plausibly sized
                             if float(splitline[27]) > 0.5*fwhmpixels:
@@ -174,9 +174,9 @@ def run_actual_psfex(file, codedir):
     tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(3), '-ANALYSIS_THRESH',str(3), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(saturlevel) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
     
-    shutil.copy(str(tempdir+'/psf.cat'), file.replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.fullpsx'))
+    shutil.copy(str(tempdir+'/psf.cat'), file.replace('outputdirectory','fullphotcatalogues').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.fullpsx'))
 
-    with open(file.replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.psx'),'w') as p:
+    with open(file.replace('outputdirectory','photometry').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.psx'),'w') as p:
         with open(str(tempdir+'/psf.cat'), 'r') as f:
             p.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
             for line in f:

@@ -472,7 +472,10 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         # banzai_image_header['RLEVEL'] = 91
         try:
             # Try to mimic as close as possible the BANZAI header.
-            banzai_image_header['ORIGIN']  = ('COMMUNITY   '           ,'Organization responsible for the data')
+            try:
+                banzai_image_header['ORIGIN']  = (eva_image_header['ORIGIN']          ,'Organization responsible for the data')
+            except:
+                banzai_image_header['ORIGIN']  = ('COMMUNITY   '           ,'Organization responsible for the data')
             banzai_image_header['SITEID']  = (eva_image_header['SITEID']         ,'ID code of the Observatory site')
             try:
                 banzai_image_header['SITE']    = ( eva_image_header['SITE'] , 'Site of the Observatory')
@@ -1157,4 +1160,4 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         bzesque_file.append(standin_err_array)
 
         output_bzesk_filename=file.replace('EVA','BZESK').replace('SmSTACK','BZESKSmSTACK').replace('.fits','.fits.fz')
-        bzesque_file.writeto(output_bzesk_filename)
+        bzesque_file.writeto(output_bzesk_filename, overwrite=True)
