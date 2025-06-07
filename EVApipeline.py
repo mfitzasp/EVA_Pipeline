@@ -67,7 +67,7 @@ from modules.general_helpers import (
     archive_downloader, de_fz_file
 )
 from modules.platesolving import multiprocess_crop_images_for_flatness
-from modules.ocsarchive import archive_preparer
+from modules.archive import archive_preparer
 from modules.astrometry import process_preastrom, process_lco_preastrom, run_astrometry_net
 from modules.header_functions import freshen_header, value_add_header, human_namer
 from modules.final_image import (
