@@ -452,14 +452,11 @@ def do_archive(cfg):
     files = glob.glob('outputdirectory/*.fit*')
     tasks = [[f, cfg['largedataset_output_folder'], cfg['shortexposure_output_folder'], cfg['ingestion_output_folder']]
              for f in files]
-    # cpu = os.cpu_count() or 1
-    # n = max(1, min(math.floor(cpu*0.25), len(tasks)))
-    # with Pool(n) as p:
-    #     p.starmap(archive_preparer, tasks)
+    cpu = os.cpu_count() or 1
+    n = max(1, min(math.floor(cpu*0.25), len(tasks)))
+    with Pool(n) as p:
+        p.starmap(archive_preparer, tasks)
     
-    for i, args in enumerate(tasks, start=1):
-        print(f"Processing {i}/{len(tasks)}: {args[0]}")
-        archive_preparer(*args)
 
 def main():    
     
