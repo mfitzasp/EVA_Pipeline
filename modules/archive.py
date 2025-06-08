@@ -37,7 +37,7 @@ import json
 import traceback
 import logging
 
-def archive_preparer(file, largedataset_output_folder, shortexposure_output_folder, ingestion_output_folder):
+def archive_preparer(file, largedataset_output_folder, shortexposure_output_folder, ingestion_output_folder, local_output_folder, local_copy, ingester_copy):
 
     queue_add=[]
 
@@ -50,6 +50,26 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
     for entry in tempheader.keys():
         if not 'COMMENT' in entry:
             headerdict[entry] = tempheader[entry]
+            
+    if local_copy:
+
+        dayobs=str(tempheader['DAY-OBS'])
+        origname=str(tempheader['ORIGNAME'])
+        try:
+            seq_number='_' + str(origname.split('-')[3])
+        except:
+            seq_number='_unknown'
+    
+        if not os.path.exists(local_output_folder):
+            os.makedirs(local_output_folder , mode=0o777)
+    
+        if not os.path.exists(local_output_folder + '/' + dayobs ):
+            os.makedirs(local_output_folder + '/' + dayobs, mode=0o777)
+    
+        # Copy the fits over
+        if not os.path.exists(local_output_folder + '/' + dayobs + '/fits'):
+            os.makedirs(local_output_folder + '/' + dayobs + '/fits', mode=0o777)
+        shutil.copy(file, local_output_folder + '/' + dayobs + '/fits/' + file.split('/')[-1].replace('.fits',seq_number+'.fits'))
 
     # Need to replace this hack by number of images requested by LCO. LCO does not have nexpreq header
     try:    
@@ -109,6 +129,12 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
         'SmSTACK-', 'sekphotSmSTACK-').replace('LoSTACK-', 'sekphotLoSTACK-')
                                                                                                   
     if os.path.exists(tempfilename):
+        
+        if local_copy:
+            if not os.path.exists(local_output_folder + '/' + dayobs + '/photometry'):
+                os.makedirs(local_output_folder + '/' + dayobs + '/photometry', mode=0o777)
+            shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/photometry/' + tempfilename.split('/')[-1].replace('.sek',seq_number+'.sek'))
+        
         headerdict['RLEVEL'] = 82
         try:
             if os.path.exists(tempfilename) and os.path.getsize(tempfilename) > 0:
@@ -126,6 +152,12 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
                                                                                                   'psxphot-').replace(
         'SmSTACK-', 'psxphotSmSTACK-').replace('LoSTACK-', 'psxphotLoSTACK-')
     if os.path.exists(tempfilename):
+        
+        if local_copy:
+            if not os.path.exists(local_output_folder + '/' + dayobs + '/photometry'):
+                os.makedirs(local_output_folder + '/' + dayobs + '/photometry', mode=0o777)
+            shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/photometry/' + tempfilename.split('/')[-1].replace('.psx',seq_number+'.psx'))
+        
         headerdict['RLEVEL'] = 83
         try:
             if os.path.exists(tempfilename) and os.path.getsize(tempfilename) > 0:
@@ -143,7 +175,14 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
     tempfilename = file.replace('outputdirectory', 'previews').replace('.fits', '.png').replace('EVA-',
                                                                                                 'png-').replace(
         'SmSTACK-', 'pngSmSTACK-')
+                                                                                                    
     if os.path.exists(tempfilename):
+        
+        if local_copy:
+            if not os.path.exists(local_output_folder + '/' + dayobs + '/pngs'):
+                os.makedirs(local_output_folder + '/' + dayobs + '/pngs', mode=0o777)
+            shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/pngs/' + tempfilename.split('/')[-1].replace('.png',seq_number+'.png'))
+        
         headerdict['RLEVEL'] = 75
         try:
             shutil.copy(tempfilename, relevant_archive_folder)        
@@ -158,7 +197,14 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
     tempfilename = file.replace('outputdirectory', 'smalljpgs').replace('.fits', '.jpg').replace('EVA-',
                                                                                                  'smalljpg-').replace(
         'SmSTACK-', 'smalljpgSmSTACK-')
+                                                                                                     
     if os.path.exists(tempfilename):
+        
+        if local_copy:
+            if not os.path.exists(local_output_folder + '/' + dayobs + '/previews'):
+                os.makedirs(local_output_folder + '/' + dayobs + '/previews', mode=0o777)
+            shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/previews/' + tempfilename.split('/')[-1].replace('.jpg',seq_number+'.jpg'))
+        
         headerdict['RLEVEL'] = 74
         try:
             shutil.copy(tempfilename, relevant_archive_folder)        
@@ -175,6 +221,12 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
                                                                                                   'thumbnail-').replace(
         'SmSTACK-', 'thumbnailSmSTACK-').replace('LoSTACK-', 'thumbnailLoSTACK-')
     if os.path.exists(tempfilename):
+        
+        if local_copy:
+            if not os.path.exists(local_output_folder + '/' + dayobs + '/thumbnails'):
+                os.makedirs(local_output_folder + '/' + dayobs + '/thumbnails', mode=0o777)
+            shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/thumbnails/' + tempfilename.split('/')[-1].replace('.jpg',seq_number+'.jpg'))
+        
         headerdict['RLEVEL'] = 73
         try:
             shutil.copy(tempfilename, relevant_archive_folder)        

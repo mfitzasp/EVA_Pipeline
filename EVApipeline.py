@@ -468,7 +468,7 @@ def do_archive(cfg):
     wait_for_diskspace(cfg['working_directory'], 0.9)
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
     files = glob.glob('outputdirectory/*.fit*')
-    tasks = [[f, cfg['largedataset_output_folder'], cfg['shortexposure_output_folder'], cfg['ingestion_output_folder']]
+    tasks = [[f, cfg['largedataset_output_folder'], cfg['shortexposure_output_folder'], cfg['ingestion_output_folder'], cfg['local_output_folder'], True, True] # The two trues are local copy then ingest... will be a config soon
              for f in files]
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(tasks)))
