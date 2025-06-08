@@ -160,7 +160,12 @@ def process_lco_preastrom(file):
             pass
     except:
         logging.info("Failed to threshold this image")
-
+        logging.info("Tends not to be a fatal error but due to a mostly blank image")
+        np.save('FLATTED'+ file.split('/')[-1].split('FILTER')[-1], hdu1)
+        try:
+            os.remove(file)
+        except:
+            pass
         logging.info(traceback.format_exc())
 
 

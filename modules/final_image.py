@@ -729,103 +729,170 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
                 banzai_image_header['TCSSTATE']= ( 'OKAY    '           ,'TCS state')
                 banzai_image_header['TCSVER']  = ( 'COMMUNITY    '           ,'Version number of the TCS software')
 
-            try:
-                banzai_image_header['TPNTMODL']= ( eva_image_header['TPNTMODL']     ,'Version number of the pointing model')
-                banzai_image_header['UT1-UTC'] = ( eva_image_header['UT1-UTC'] ,'[s] UT1-UTC')
-                banzai_image_header['POLARMOX']= ( eva_image_header['POLARMOX'] ,'[arcsec] Polar motion X')
-                banzai_image_header['POLARMOY']= ( eva_image_header['POLARMOY'] ,'[arcsec] Polar motion Y')
-                banzai_image_header['EOPSRC']  = ( eva_image_header['EOPSRC'] ,'Source of the EOP Values')
+            # try:
+            #     banzai_image_header['TPNTMODL']= ( eva_image_header['TPNTMODL']     ,'Version number of the pointing model')
+            #     banzai_image_header['UT1-UTC'] = ( eva_image_header['UT1-UTC'] ,'[s] UT1-UTC')
+            #     banzai_image_header['POLARMOX']= ( eva_image_header['POLARMOX'] ,'[arcsec] Polar motion X')
+            #     banzai_image_header['POLARMOY']= ( eva_image_header['POLARMOY'] ,'[arcsec] Polar motion Y')
+            #     banzai_image_header['EOPSRC']  = ( eva_image_header['EOPSRC'] ,'Source of the EOP Values')
 
-                banzai_image_header['ROLLERDR']= ( eva_image_header['ROLLERDR'],'[rad] Driven roller encoder angle')
-                banzai_image_header['ROLLERND']= ( eva_image_header['ROLLERND'] ,'[rad] Non-driven roller encoder angle')
-                banzai_image_header['AZDMD']   = ( eva_image_header['AZDMD'] ,'[deg] Azimuth axis demand')
-                banzai_image_header['AZIMUTH'] = ( eva_image_header['AZIMUTH'] ,'[deg] Azimuth axis position')
-                banzai_image_header['AZSTAT']  = ( eva_image_header['AZSTAT']           ,'Azimuth axis state')
-                banzai_image_header['ALTDMD']  = ( eva_image_header['ALTDMD'] ,'[deg] Altitude axis demand')
-                banzai_image_header['ALTITUDE']= ( eva_image_header['ALTITUDE'] ,'[deg] Altitude axis position')
-                banzai_image_header['ALTSTAT'] = ( eva_image_header['ALTSTAT']           ,'Altitude axis state')
-                banzai_image_header['ROTTYPE'] = ( eva_image_header['ROTTYPE']          ,'Selected image derotator')
-                banzai_image_header['ROTMODE'] = ( eva_image_header['ROTMODE']           ,'Rotator mode')
-                banzai_image_header['ROTDMD']  = ( eva_image_header['ROTDMD'] ,'[deg] Rotator axis demand')
-                banzai_image_header['ROTANGLE']= ( eva_image_header['ROTANGLE']           ,'[deg] Rotator axis position')
-                banzai_image_header['ROTSKYPA']= ( eva_image_header['ROTSKYPA'] ,'[deg] Rotator position angle')
-                banzai_image_header['ROTSTAT'] = ( eva_image_header['ROTSTAT'] ,'Rotator axis state')
-                banzai_image_header['AIRMASS'] = ( eva_image_header['AIRMASS'],'Effective mean airmass')
-                banzai_image_header['AMSTART'] = ( eva_image_header['AMSTART'] ,'Airmass at start of observation')
-                banzai_image_header['AMEND']   = ( eva_image_header['AMEND'] ,'Airmass at end of observation')
-                banzai_image_header['ENC1STAT']= ( eva_image_header['ENC1STAT']          ,'Enclosure shutter 1 state')
-                banzai_image_header['ENC2STAT']= ( eva_image_header['ENC2STAT']           ,'Enclosure shutter 2 state')
-                banzai_image_header['ENCAZ']   = ( eva_image_header['ENCAZ'] ,'[deg] Enclosure azimuth')
-                banzai_image_header['ENCWLIGT']= ( eva_image_header['ENCWLIGT']           ,'Enclosure white lights state')
-                banzai_image_header['ENCRLIGT']= ( eva_image_header['ENCRLIGT']           ,'Enclosure red lights state')
-                banzai_image_header['FSTATION']= ( eva_image_header['FSTATION'] ,'Focal station, e.g. Cassegrain, Nasmyth WS')
-                banzai_image_header['FOLDSTAT']= ( eva_image_header['FOLDSTAT']          ,'Fold mirror state')
-                banzai_image_header['FOLDPORT']= ( eva_image_header['FOLDPORT']           ,'Fold mirror port')
-                banzai_image_header['FOLDPOSN']= ( eva_image_header['FOLDPOSN']          ,'[{mm,deg}] Fold mirror position (r, theta)')
-                banzai_image_header['M1COVER'] = ( eva_image_header['M1COVER']           ,'M1 mirror cover state')
-                banzai_image_header['M1HRTMN'] = ( eva_image_header['M1HRTMN']          ,'M1 Hartmann screen state')
-                banzai_image_header['FOCDMD']  = ( eva_image_header['FOCDMD'] ,'[mm] Demanded focus position in focal plane')
-                banzai_image_header['FOCPOSN'] = ( eva_image_header['FOCPOSN'] ,'[mm] Actual focus position in focal plane')
-                banzai_image_header['FOCTELZP']= ( eva_image_header['FOCTELZP'] ,'[mm] Telescope default focus')
-                banzai_image_header['FOCINOFF']= ( eva_image_header['FOCINOFF'],'[mm] Instrument focus offset')
-                banzai_image_header['FOCTOFF'] = ( eva_image_header['FOCTOFF'] ,'[mm] Thermal correction value')
-                banzai_image_header['FOCZOFF'] = ( eva_image_header['FOCZOFF'] ,'[mm] Zenith compression correction')
-                banzai_image_header['FOCAFOFF']= ( eva_image_header['FOCAFOFF'] ,'[mm] Autofocus offset in focal plane')
-                banzai_image_header['FOCOBOFF']= ( eva_image_header['FOCOBOFF'],'[mm] Observer focus offset/defocus in focal plane')
-                banzai_image_header['FOCFLOFF']= ( eva_image_header['FOCFLOFF'] ,'[mm] Filter focus offset in focal plane')
-                banzai_image_header['FOCSTAT'] = ( eva_image_header['FOCSTAT']           ,'Focus state')
-                banzai_image_header['M2PITCH'] = ( eva_image_header['M2PITCH'] ,'[arcsec] M2 tilt about vertex in pitch direction')
-                banzai_image_header['M2ROLL']  = ( eva_image_header['M2ROLL'] ,'[arcsec] M2 tilt about vertex in roll direction')
-                banzai_image_header['AUXROLL'] = ( eva_image_header['AUXROLL'] ,'[arcsec] Auxiliary pointing corrections in roll')
-                banzai_image_header['AUXPITCH']= ( eva_image_header['AUXPITCH'] ,'[arcsec] Auxiliary pointing corrections in pitch')
-            except:
-                banzai_image_header['TPNTMODL']= ( 'N.Y.I.'     ,'Version number of the pointing model')
-                banzai_image_header['UT1-UTC'] = (            0.0567600 ,'[s] UT1-UTC')
-                banzai_image_header['POLARMOX']= (            0.0 ,'[arcsec] Polar motion X')
-                banzai_image_header['POLARMOY']= (            0.0,'[arcsec] Polar motion Y')
-                banzai_image_header['EOPSRC']  = ( 'IERS BULL. A 2024/09/19' ,'Source of the EOP Values')
-                banzai_image_header['ROLLERDR']= (            0.0000000 ,'[rad] Driven roller encoder angle')
-                banzai_image_header['ROLLERND']= (            0.0000000 ,'[rad] Non-driven roller encoder angle')
-                banzai_image_header['AZDMD']   = (          eva_image_header['AZIMUTH'] ,'[deg] Azimuth axis demand')
-                banzai_image_header['AZIMUTH'] = (          eva_image_header['AZIMUTH'] ,'[deg] Azimuth axis position')
-                banzai_image_header['AZSTAT']  = ( 'OKAY    '           ,'Azimuth axis state')
-                banzai_image_header['ALTDMD']  = (           eva_image_header['ALTITUDE'] ,'[deg] Altitude axis demand')
-                banzai_image_header['ALTITUDE']= (           eva_image_header['ALTITUDE'] ,'[deg] Altitude axis position')
-                banzai_image_header['ALTSTAT'] = ( 'OKAY    '           ,'Altitude axis state')
-                banzai_image_header['ROTTYPE'] = ( 'NONE    '           ,'Selected image derotator')
-                banzai_image_header['ROTMODE'] = ( 'FIXED   '           ,'Rotator mode')
-                banzai_image_header['ROTDMD']  = (            0.0000000 ,'[deg] Rotator axis demand')
-                banzai_image_header['ROTANGLE']= ( 'N/A     '           ,'[deg] Rotator axis position')
-                banzai_image_header['ROTSKYPA']= (           0.0 ,'[deg] Rotator position angle')
-                banzai_image_header['ROTSTAT'] = ('OFF     '           ,'Rotator axis state')
-                banzai_image_header['AIRMASS'] = (           eva_image_header['AIRMASS'] ,'Effective mean airmass')
-                banzai_image_header['AMSTART'] = (           eva_image_header['AIRMASS'] ,'Airmass at start of observation')
-                banzai_image_header['AMEND']   = (           eva_image_header['AIRMASS'] ,'Airmass at end of observation')
-                banzai_image_header['ENC1STAT']= ( 'OPEN    '           ,'Enclosure shutter 1 state')
-                banzai_image_header['ENC2STAT']= ( 'OPEN    '           ,'Enclosure shutter 2 state')
-                banzai_image_header['ENCAZ']   = (            0.0000000 ,'[deg] Enclosure azimuth')
-                banzai_image_header['ENCWLIGT']= ( 'OFF     '           ,'Enclosure white lights state')
-                banzai_image_header['ENCRLIGT']= ( 'OFF     '           ,'Enclosure red lights state')
-                banzai_image_header['FSTATION']= ( 'UNKNOWN' ,'Focal station, e.g. Cassegrain, Nasmyth WS')
-                banzai_image_header['FOLDSTAT']= ( 'N/A     '           ,'Fold mirror state')
-                banzai_image_header['FOLDPORT']= ( '0       '           ,'Fold mirror port')
-                banzai_image_header['FOLDPOSN']= ( 'N/A, N/A'           ,'[{mm,deg}] Fold mirror position (r, theta)')
-                banzai_image_header['M1COVER'] = ( 'STOWED  '           ,'M1 mirror cover state')
-                banzai_image_header['M1HRTMN'] = ( 'UNKNOWN '           ,'M1 Hartmann screen state')
-                banzai_image_header['FOCDMD']  = (            0.0000000 ,'[arbitrary] Demanded focus position in focal plane')
-                banzai_image_header['FOCPOSN'] = (            eva_image_header['FOCUSPOS'] ,'[arbitrary] Actual focus position in focal plane')
-                banzai_image_header['FOCTELZP']= (            eva_image_header['FOCUSPOS'] ,'[arbitrary] Telescope default focus')
-                banzai_image_header['FOCINOFF']= (            0.0000000 ,'[arbitrary] Instrument focus offset')
-                banzai_image_header['FOCTOFF'] = (            0.00 ,'[arbitrary] Thermal correction value')
-                banzai_image_header['FOCZOFF'] = (            0.00 ,'[arbitrary] Zenith compression correction')
-                banzai_image_header['FOCAFOFF']= (            0.00 ,'[arbitrary] Autofocus offset in focal plane')
-                banzai_image_header['FOCOBOFF']= (            0.0000000 ,'[arbitrary] Observer focus offset/defocus in focal plane')
-                banzai_image_header['FOCFLOFF']= (            0.0 ,'[arbitrary] Filter focus offset in focal plane')
-                banzai_image_header['FOCSTAT'] = ( 'HALTED  '           ,'Focus state')
-                banzai_image_header['M2PITCH'] = (            0.0000000 ,'[arcsec] M2 tilt about vertex in pitch direction')
-                banzai_image_header['M2ROLL']  = (            0.0000000 ,'[arcsec] M2 tilt about vertex in roll direction')
-                banzai_image_header['AUXROLL'] = (            0.0000000 ,'[arcsec] Auxiliary pointing corrections in roll')
-                banzai_image_header['AUXPITCH']= (            0.0000000 ,'[arcsec] Auxiliary pointing corrections in pitch')
+            #     banzai_image_header['ROLLERDR']= ( eva_image_header['ROLLERDR'],'[rad] Driven roller encoder angle')
+            #     banzai_image_header['ROLLERND']= ( eva_image_header['ROLLERND'] ,'[rad] Non-driven roller encoder angle')
+            #     banzai_image_header['AZDMD']   = ( eva_image_header['AZDMD'] ,'[deg] Azimuth axis demand')
+            #     banzai_image_header['AZIMUTH'] = ( eva_image_header['AZIMUTH'] ,'[deg] Azimuth axis position')
+            #     banzai_image_header['AZSTAT']  = ( eva_image_header['AZSTAT']           ,'Azimuth axis state')
+            #     banzai_image_header['ALTDMD']  = ( eva_image_header['ALTDMD'] ,'[deg] Altitude axis demand')
+            #     banzai_image_header['ALTITUDE']= ( eva_image_header['ALTITUDE'] ,'[deg] Altitude axis position')
+            #     banzai_image_header['ALTSTAT'] = ( eva_image_header['ALTSTAT']           ,'Altitude axis state')
+            #     banzai_image_header['ROTTYPE'] = ( eva_image_header['ROTTYPE']          ,'Selected image derotator')
+            #     banzai_image_header['ROTMODE'] = ( eva_image_header['ROTMODE']           ,'Rotator mode')
+            #     banzai_image_header['ROTDMD']  = ( eva_image_header['ROTDMD'] ,'[deg] Rotator axis demand')
+            #     banzai_image_header['ROTANGLE']= ( eva_image_header['ROTANGLE']           ,'[deg] Rotator axis position')
+            #     banzai_image_header['ROTSKYPA']= ( eva_image_header['ROTSKYPA'] ,'[deg] Rotator position angle')
+            #     banzai_image_header['ROTSTAT'] = ( eva_image_header['ROTSTAT'] ,'Rotator axis state')
+            #     banzai_image_header['AIRMASS'] = ( eva_image_header['AIRMASS'],'Effective mean airmass')
+            #     banzai_image_header['AMSTART'] = ( eva_image_header['AMSTART'] ,'Airmass at start of observation')
+            #     banzai_image_header['AMEND']   = ( eva_image_header['AMEND'] ,'Airmass at end of observation')
+            #     banzai_image_header['ENC1STAT']= ( eva_image_header['ENC1STAT']          ,'Enclosure shutter 1 state')
+            #     banzai_image_header['ENC2STAT']= ( eva_image_header['ENC2STAT']           ,'Enclosure shutter 2 state')
+            #     banzai_image_header['ENCAZ']   = ( eva_image_header['ENCAZ'] ,'[deg] Enclosure azimuth')
+            #     banzai_image_header['ENCWLIGT']= ( eva_image_header['ENCWLIGT']           ,'Enclosure white lights state')
+            #     banzai_image_header['ENCRLIGT']= ( eva_image_header['ENCRLIGT']           ,'Enclosure red lights state')
+            #     banzai_image_header['FSTATION']= ( eva_image_header['FSTATION'] ,'Focal station, e.g. Cassegrain, Nasmyth WS')
+            #     banzai_image_header['FOLDSTAT']= ( eva_image_header['FOLDSTAT']          ,'Fold mirror state')
+            #     banzai_image_header['FOLDPORT']= ( eva_image_header['FOLDPORT']           ,'Fold mirror port')
+            #     banzai_image_header['FOLDPOSN']= ( eva_image_header['FOLDPOSN']          ,'[{mm,deg}] Fold mirror position (r, theta)')
+            #     banzai_image_header['M1COVER'] = ( eva_image_header['M1COVER']           ,'M1 mirror cover state')
+            #     banzai_image_header['M1HRTMN'] = ( eva_image_header['M1HRTMN']          ,'M1 Hartmann screen state')
+            #     banzai_image_header['FOCDMD']  = ( eva_image_header['FOCDMD'] ,'[mm] Demanded focus position in focal plane')
+            #     banzai_image_header['FOCPOSN'] = ( eva_image_header['FOCPOSN'] ,'[mm] Actual focus position in focal plane')
+            #     banzai_image_header['FOCTELZP']= ( eva_image_header['FOCTELZP'] ,'[mm] Telescope default focus')
+            #     banzai_image_header['FOCINOFF']= ( eva_image_header['FOCINOFF'],'[mm] Instrument focus offset')
+            #     banzai_image_header['FOCTOFF'] = ( eva_image_header['FOCTOFF'] ,'[mm] Thermal correction value')
+            #     banzai_image_header['FOCZOFF'] = ( eva_image_header['FOCZOFF'] ,'[mm] Zenith compression correction')
+            #     banzai_image_header['FOCAFOFF']= ( eva_image_header['FOCAFOFF'] ,'[mm] Autofocus offset in focal plane')
+            #     banzai_image_header['FOCOBOFF']= ( eva_image_header['FOCOBOFF'],'[mm] Observer focus offset/defocus in focal plane')
+            #     banzai_image_header['FOCFLOFF']= ( eva_image_header['FOCFLOFF'] ,'[mm] Filter focus offset in focal plane')
+            #     banzai_image_header['FOCSTAT'] = ( eva_image_header['FOCSTAT']           ,'Focus state')
+            #     banzai_image_header['M2PITCH'] = ( eva_image_header['M2PITCH'] ,'[arcsec] M2 tilt about vertex in pitch direction')
+            #     banzai_image_header['M2ROLL']  = ( eva_image_header['M2ROLL'] ,'[arcsec] M2 tilt about vertex in roll direction')
+            #     banzai_image_header['AUXROLL'] = ( eva_image_header['AUXROLL'] ,'[arcsec] Auxiliary pointing corrections in roll')
+            #     banzai_image_header['AUXPITCH']= ( eva_image_header['AUXPITCH'] ,'[arcsec] Auxiliary pointing corrections in pitch')
+            # except:
+            #     banzai_image_header['TPNTMODL']= ( 'N.Y.I.'     ,'Version number of the pointing model')
+            #     banzai_image_header['UT1-UTC'] = (            0.0567600 ,'[s] UT1-UTC')
+            #     banzai_image_header['POLARMOX']= (            0.0 ,'[arcsec] Polar motion X')
+            #     banzai_image_header['POLARMOY']= (            0.0,'[arcsec] Polar motion Y')
+            #     banzai_image_header['EOPSRC']  = ( 'IERS BULL. A 2024/09/19' ,'Source of the EOP Values')
+            #     banzai_image_header['ROLLERDR']= (            0.0000000 ,'[rad] Driven roller encoder angle')
+            #     banzai_image_header['ROLLERND']= (            0.0000000 ,'[rad] Non-driven roller encoder angle')
+            #     banzai_image_header['AZDMD']   = (          eva_image_header['AZIMUTH'] ,'[deg] Azimuth axis demand')
+            #     banzai_image_header['AZIMUTH'] = (          eva_image_header['AZIMUTH'] ,'[deg] Azimuth axis position')
+            #     banzai_image_header['AZSTAT']  = ( 'OKAY    '           ,'Azimuth axis state')
+            #     banzai_image_header['ALTDMD']  = (           eva_image_header['ALTITUDE'] ,'[deg] Altitude axis demand')
+            #     banzai_image_header['ALTITUDE']= (           eva_image_header['ALTITUDE'] ,'[deg] Altitude axis position')
+            #     banzai_image_header['ALTSTAT'] = ( 'OKAY    '           ,'Altitude axis state')
+            #     banzai_image_header['ROTTYPE'] = ( 'NONE    '           ,'Selected image derotator')
+            #     banzai_image_header['ROTMODE'] = ( 'FIXED   '           ,'Rotator mode')
+            #     banzai_image_header['ROTDMD']  = (            0.0000000 ,'[deg] Rotator axis demand')
+            #     banzai_image_header['ROTANGLE']= ( 'N/A     '           ,'[deg] Rotator axis position')
+            #     banzai_image_header['ROTSKYPA']= (           0.0 ,'[deg] Rotator position angle')
+            #     banzai_image_header['ROTSTAT'] = ('OFF     '           ,'Rotator axis state')
+            #     banzai_image_header['AIRMASS'] = (           eva_image_header['AIRMASS'] ,'Effective mean airmass')
+            #     banzai_image_header['AMSTART'] = (           eva_image_header['AIRMASS'] ,'Airmass at start of observation')
+            #     banzai_image_header['AMEND']   = (           eva_image_header['AIRMASS'] ,'Airmass at end of observation')
+            #     banzai_image_header['ENC1STAT']= ( 'OPEN    '           ,'Enclosure shutter 1 state')
+            #     banzai_image_header['ENC2STAT']= ( 'OPEN    '           ,'Enclosure shutter 2 state')
+            #     banzai_image_header['ENCAZ']   = (            0.0000000 ,'[deg] Enclosure azimuth')
+            #     banzai_image_header['ENCWLIGT']= ( 'OFF     '           ,'Enclosure white lights state')
+            #     banzai_image_header['ENCRLIGT']= ( 'OFF     '           ,'Enclosure red lights state')
+            #     banzai_image_header['FSTATION']= ( 'UNKNOWN' ,'Focal station, e.g. Cassegrain, Nasmyth WS')
+            #     banzai_image_header['FOLDSTAT']= ( 'N/A     '           ,'Fold mirror state')
+            #     banzai_image_header['FOLDPORT']= ( '0       '           ,'Fold mirror port')
+            #     banzai_image_header['FOLDPOSN']= ( 'N/A, N/A'           ,'[{mm,deg}] Fold mirror position (r, theta)')
+            #     banzai_image_header['M1COVER'] = ( 'STOWED  '           ,'M1 mirror cover state')
+            #     banzai_image_header['M1HRTMN'] = ( 'UNKNOWN '           ,'M1 Hartmann screen state')
+            #     banzai_image_header['FOCDMD']  = (            0.0000000 ,'[arbitrary] Demanded focus position in focal plane')
+            #     banzai_image_header['FOCPOSN'] = (            eva_image_header['FOCUSPOS'] ,'[arbitrary] Actual focus position in focal plane')
+            #     banzai_image_header['FOCTELZP']= (            eva_image_header['FOCUSPOS'] ,'[arbitrary] Telescope default focus')
+            #     banzai_image_header['FOCINOFF']= (            0.0000000 ,'[arbitrary] Instrument focus offset')
+            #     banzai_image_header['FOCTOFF'] = (            0.00 ,'[arbitrary] Thermal correction value')
+            #     banzai_image_header['FOCZOFF'] = (            0.00 ,'[arbitrary] Zenith compression correction')
+            #     banzai_image_header['FOCAFOFF']= (            0.00 ,'[arbitrary] Autofocus offset in focal plane')
+            #     banzai_image_header['FOCOBOFF']= (            0.0000000 ,'[arbitrary] Observer focus offset/defocus in focal plane')
+            #     banzai_image_header['FOCFLOFF']= (            0.0 ,'[arbitrary] Filter focus offset in focal plane')
+            #     banzai_image_header['FOCSTAT'] = ( 'HALTED  '           ,'Focus state')
+            #     banzai_image_header['M2PITCH'] = (            0.0000000 ,'[arcsec] M2 tilt about vertex in pitch direction')
+            #     banzai_image_header['M2ROLL']  = (            0.0000000 ,'[arcsec] M2 tilt about vertex in roll direction')
+            #     banzai_image_header['AUXROLL'] = (            0.0000000 ,'[arcsec] Auxiliary pointing corrections in roll')
+            #     banzai_image_header['AUXPITCH']= (            0.0000000 ,'[arcsec] Auxiliary pointing corrections in pitch')
+
+
+            header_defs = {
+                'TPNTMODL': ('TPNTMODL', eva_image_header.get('TPNTMODL', 'N.Y.I.'),             'Version number of the pointing model'),
+                'UT1-UTC':  ('UT1-UTC',  eva_image_header.get('UT1-UTC',  0.0567600),           '[s] UT1-UTC'),
+                'POLARMOX': ('POLARMOX', eva_image_header.get('POLARMOX', 0.0),                 '[arcsec] Polar motion X'),
+                'POLARMOY': ('POLARMOY', eva_image_header.get('POLARMOY', 0.0),                 '[arcsec] Polar motion Y'),
+                'EOPSRC':   ('EOPSRC',   eva_image_header.get('EOPSRC',   'IERS BULL. A 2024/09/19'), 'Source of the EOP Values'),
+            
+                'ROLLERDR': ('ROLLERDR', eva_image_header.get('ROLLERDR', 0.0),                 '[rad] Driven roller encoder angle'),
+                'ROLLERND': ('ROLLERND', eva_image_header.get('ROLLERND', 0.0),                 '[rad] Non-driven roller encoder angle'),
+            
+                'AZDMD':    ('AZIMUTH',  eva_image_header.get('AZIMUTH', 0.0),                 '[deg] Azimuth axis demand'),
+                'AZIMUTH':  ('AZIMUTH',  eva_image_header.get('AZIMUTH', 0.0),                 '[deg] Azimuth axis position'),
+                'AZSTAT':   ('AZSTAT',   eva_image_header.get('AZSTAT',   'OKAY    '),         'Azimuth axis state'),
+            
+                'ALTDMD':   ('ALTITUDE', eva_image_header.get('ALTITUDE', 0.0),                '[deg] Altitude axis demand'),
+                'ALTITUDE': ('ALTITUDE', eva_image_header.get('ALTITUDE', 0.0),                '[deg] Altitude axis position'),
+                'ALTSTAT':  ('ALTSTAT',  eva_image_header.get('ALTSTAT',  'OKAY    '),         'Altitude axis state'),
+            
+                'ROTTYPE':  ('ROTTYPE',  eva_image_header.get('ROTTYPE',  'NONE    '),         'Selected image derotator'),
+                'ROTMODE':  ('ROTMODE',  eva_image_header.get('ROTMODE',  'FIXED   '),         'Rotator mode'),
+                'ROTDMD':   ('ROTDMD',   eva_image_header.get('ROTDMD',   0.0),                '[deg] Rotator axis demand'),
+                'ROTANGLE': ('ROTANGLE', eva_image_header.get('ROTANGLE', 'N/A     '),         '[deg] Rotator axis position'),
+                'ROTSKYPA': ('ROTSKYPA', eva_image_header.get('ROTSKYPA', 0.0),                '[deg] Rotator position angle'),
+                'ROTSTAT':  ('ROTSTAT',  eva_image_header.get('ROTSTAT',  'OFF     '),         'Rotator axis state'),
+            
+                'AIRMASS':  ('AIRMASS',  eva_image_header.get('AIRMASS',  0.0),                'Effective mean airmass'),
+                'AMSTART':  ('AIRMASS',  eva_image_header.get('AIRMASS',  0.0),                'Airmass at start of observation'),
+                'AMEND':    ('AIRMASS',  eva_image_header.get('AIRMASS',  0.0),                'Airmass at end of observation'),
+            
+                'ENC1STAT': ('ENC1STAT', eva_image_header.get('ENC1STAT', 'OPEN    '),         'Enclosure shutter 1 state'),
+                'ENC2STAT': ('ENC2STAT', eva_image_header.get('ENC2STAT', 'OPEN    '),         'Enclosure shutter 2 state'),
+                'ENCAZ':    ('ENCAZ',    eva_image_header.get('ENCAZ',    0.0),                '[deg] Enclosure azimuth'),
+                'ENCWLIGT': ('ENCWLIGT', eva_image_header.get('ENCWLIGT', 'OFF     '),         'Enclosure white lights state'),
+                'ENCRLIGT': ('ENCRLIGT', eva_image_header.get('ENCRLIGT', 'OFF     '),         'Enclosure red lights state'),
+            
+                'FSTATION': ('FSTATION', eva_image_header.get('FSTATION', 'UNKNOWN'),         'Focal station, e.g. Cassegrain, Nasmyth WS'),
+                'FOLDSTAT': ('FOLDSTAT', eva_image_header.get('FOLDSTAT', 'N/A     '),         'Fold mirror state'),
+                'FOLDPORT': ('FOLDPORT', eva_image_header.get('FOLDPORT', '0       '),         'Fold mirror port'),
+                'FOLDPOSN': ('FOLDPOSN', eva_image_header.get('FOLDPOSN', 'N/A, N/A'),         '[{mm,deg}] Fold mirror position (r, theta)'),
+            
+                'M1COVER':  ('M1COVER',  eva_image_header.get('M1COVER',  'STOWED  '),         'M1 mirror cover state'),
+                'M1HRTMN':  ('M1HRTMN',  eva_image_header.get('M1HRTMN',  'UNKNOWN '),         'M1 Hartmann screen state'),
+            
+                'FOCDMD':   ('FOCDMD',   eva_image_header.get('FOCDMD',   0.0),                '[arbitrary] Demanded focus position in focal plane'),
+                'FOCPOSN':  ('FOCUSPOS', eva_image_header.get('FOCUSPOS', 0.0),                '[arbitrary] Actual focus position in focal plane'),
+                'FOCTELZP': ('FOCTELZP', eva_image_header.get('FOCTELZP', eva_image_header.get('FOCUSPOS', 0.0)), '[arbitrary] Telescope default focus'),
+                'FOCINOFF': ('FOCINOFF', eva_image_header.get('FOCINOFF', 0.0),               '[arbitrary] Instrument focus offset'),
+                'FOCTOFF':  ('FOCTOFF',  eva_image_header.get('FOCTOFF',  0.00),              '[arbitrary] Thermal correction value'),
+                'FOCZOFF':  ('FOCZOFF',  eva_image_header.get('FOCZOFF',  0.00),              '[arbitrary] Zenith compression correction'),
+                'FOCAFOFF': ('FOCAFOFF', eva_image_header.get('FOCAFOFF', 0.00),              '[arbitrary] Autofocus offset in focal plane'),
+                'FOCOBOFF': ('FOCOBOFF', eva_image_header.get('FOCOBOFF', 0.0),               '[arbitrary] Observer focus offset/defocus in focal plane'),
+                'FOCFLOFF': ('FOCFLOFF', eva_image_header.get('FOCFLOFF', 0.0),               '[arbitrary] Filter focus offset in focal plane'),
+                'FOCSTAT':  ('FOCSTAT',  eva_image_header.get('FOCSTAT',  'HALTED  '),        'Focus state'),
+            
+                'M2PITCH':  ('M2PITCH',  eva_image_header.get('M2PITCH', 0.0),               '[arcsec] M2 tilt about vertex in pitch direction'),
+                'M2ROLL':   ('M2ROLL',   eva_image_header.get('M2ROLL',  0.0),               '[arcsec] M2 tilt about vertex in roll direction'),
+            
+                'AUXROLL':  ('AUXROLL',  eva_image_header.get('AUXROLL', 0.0),               '[arcsec] Auxiliary pointing corrections in roll'),
+                'AUXPITCH': ('AUXPITCH', eva_image_header.get('AUXPITCH',0.0),               '[arcsec] Auxiliary pointing corrections in pitch'),
+            }
+            
+            # then your loop:
+            for hdr_key, (eva_key, default, comment) in header_defs.items():
+                value = eva_image_header.get(eva_key, default)
+                banzai_image_header[hdr_key] = (value, comment)
 
             ########### WCS COPY HERE
             try:
@@ -1041,7 +1108,10 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
                     banzai_image_header['L1MEAN']=   ( 0.0 ,'[counts] Sigma clipped mean of frame background')
                     banzai_image_header['L1MEDIAN']= (    0.0 ,'[counts] Median of frame background')
                     banzai_image_header['L1SIGMA'] = (   0.0 ,'[counts] Robust std dev of frame background')
-                    banzai_image_header['L1FWHM']  = (   eva_image_header['FWHMasec'] ,'[arcsec] Frame FWHM in arcsec')
+                    try:
+                        banzai_image_header['L1FWHM']  = (   eva_image_header['FWHMasec'] ,'[arcsec] Frame FWHM in arcsec')
+                    except:
+                        banzai_image_header['L1FWHM']  = (   'nan' ,'[arcsec] Frame FWHM in arcsec')
 
                     banzai_image_header['L1FWTM']  = (   'UNKNOWN' ,'Ratio of FWHM to Full-Width Tenth Max')
                     banzai_image_header['L1ELLIP'] = (  0.0 ,'Mean image ellipticity (1-B/A)')

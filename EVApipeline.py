@@ -40,7 +40,7 @@ import warnings
 from pathlib import Path
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
-#import traceback
+import traceback
 
 import numpy as np
 from astropy.io import fits
@@ -298,18 +298,36 @@ def header_merge(headers, base):
     for h in headers:
         name = h['ORIGNAME']
         # Merge WCS if present
-        wfile = name.replace('.fits.fz', '.wcs').replace('.fits', '.wcs')
-        if os.path.exists(wfile):
-            wh = fits.open(wfile)[0].header
-            h.update(wcs.WCS(wh).to_header(relax=True))
-            os.remove(wfile)
+        try:
+            wfile = name.replace('.fits.fz', '.wcs').replace('.fits', '.wcs')
+            if os.path.exists(wfile):
+                wh = fits.open(wfile)[0].header
+                h.update(wcs.WCS(wh).to_header(relax=True))
+                os.remove(wfile)
+        except:
+            print (traceback.format_exc())
         # Merge FWHM info if present
-        ffile = name.replace('.fits.fz', '.fwhm').replace('.fits', '.fwhm')
-        if os.path.exists(ffile):
-            ff = pickle.load(open(ffile, 'rb'))
-            for k in ['SKYLEVEL', 'FWHM', 'FWHMpix', 'FWHMasec', 'FWHMstd', 'NSTARS']:
-                h[k] = ff.get(k, 'Unknown')
-            os.remove(ffile)
+        try:
+            ffile = name.replace('.fits.fz', '.fwhm').replace('.fits', '.fwhm')
+            if os.path.exists(ffile):
+                ff = pickle.load(open(ffile, 'rb'))
+                for k in ['SKYLEVEL', 'FWHM', 'FWHMpix', 'FWHMasec', 'FWHMstd', 'NSTARS']:
+                    # h[k] = ff.get(k, 'Unknown')
+                    val = ff.get(k, None)
+                    # 1) missing entirely → we’ll use "Unknown"
+                    # 2) present but NaN → also "Unknown"
+                    if val is None or (isinstance(val, float) and math.isnan(val)) \
+                                    or (isinstance(val, np.floating) and np.isnan(val)):
+                        h[k] = 'nan'
+                    else:
+                        try:
+                            h[k] = val
+                        except:
+                            h[k] = 'nan'
+                os.remove(ffile)
+        except:
+            print (traceback.format_exc())
+        
         out.append(h)
     return out
 
