@@ -56,8 +56,11 @@ def multiprocess_final_image_construction_smartstack(file):
 
     # Calculate Image FWHM
     sepimg=copy.deepcopy(imagedata).byteswap().newbyteorder()
-    bkg = sep.Background(sepimg, bw=32, bh=32, fw=3, fh=3)
-    bkg.subfrom(sepimg)
+    try:
+        bkg = sep.Background(sepimg, bw=32, bh=32, fw=3, fh=3)
+        bkg.subfrom(sepimg)
+    except:
+        logging.info ("Failed background (usually flat) for image: " + str(file))
     tempheader=calculate_image_fwhm(sepimg, tempheader)
 
     # Offset bias pedestal

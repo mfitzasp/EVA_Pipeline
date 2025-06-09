@@ -868,7 +868,10 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
         newheader['IMAGEW']=newheader['IMAGEW']-(2*cropvalue)
 
     # Step Integer from mode to reject low values to np.nan
-    finalImage, imageMode = thresh(finalImage, newheader['SATURATE'])
+    try:
+        finalImage, imageMode = thresh(finalImage, newheader['SATURATE'])
+    except:
+        imageMode=np.nan
         
     # # 3.0 is a reasonable read_noise
     try:
@@ -881,7 +884,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
         gain_string=float(newheader['GAIN'])
     except:
         gain_string=1.0
-    if 'T' in str(newheader['DOCOSMIC']):
+    if 'T' in str(newheader['DOCOSMIC']) and not np.isnan(imageMode):
         try:
             finalImage = mask_cosmics(finalImage, gain=gain_string, rdnoise=readnoise_string, saturate=newheader['SATURATE'], imageMode=imageMode, pixscale=newheader['PIXSCALE'], telescopename='smartstack')
         except:
