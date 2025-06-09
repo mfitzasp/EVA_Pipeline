@@ -1161,7 +1161,11 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         if 'EVA-' in file:
             if telescope == 'lco':
                 origfilename=banzai_image_header['ORIGNAME']
-                standin_bpm_array=np.load(basedirectory+'/lcobpms/'+origfilename.replace('.fits.fz','.npy'))
+                try:
+                    standin_bpm_array=np.load(basedirectory+'/lcobpms/'+origfilename.replace('.fits.fz','.npy'))
+                except:
+                    logging.info ("failed bpm for bzesk " + str(origfilename))
+                    standin_bpm_array= fits.CompImageHDU(np.zeros(banzai_image.shape))
                 # For single images, we actually crop them for wcs flatness
                 cropvalue_h=int(standin_bpm_array.shape[1]*0.05) + 20
                 cropvalue_w=int(standin_bpm_array.shape[0]*0.05) + 20
