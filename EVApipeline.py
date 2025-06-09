@@ -424,9 +424,12 @@ def construct_images(headers, human_names, cfg, args, base):
     previews = glob.glob('outputdirectory/*.fits')
     # don't make preview jpgs of variance frames
     previews = [f for f in previews if not os.path.basename(f).startswith('variance_')]
-    n3 = max(1, min(math.floor(cpu*0.25), len(previews)))
-    with Pool(n3) as p:
-        p.map(multiprocess_preview_images, previews)
+    try:
+        n3 = max(1, min(math.floor(cpu*0.25), len(previews)))
+        with Pool(n3) as p:
+            p.map(multiprocess_preview_images, previews)
+    except:
+        logging.info("Failed on making previews... usually due to blank images")
 
 def do_photometry(cfg):
     logging.info('Photometry')
