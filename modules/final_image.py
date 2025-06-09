@@ -61,7 +61,11 @@ def multiprocess_final_image_construction_smartstack(file):
         bkg.subfrom(sepimg)
     except:
         logging.info ("Failed background (usually flat) for image: " + str(file))
-    tempheader=calculate_image_fwhm(sepimg, tempheader)
+        
+    try:
+        tempheader=calculate_image_fwhm(sepimg, tempheader)
+    except:
+        logging.info ("Failed FWHM (usually blank) for image: " + str(file))
 
     # Offset bias pedestal
     imagedata = imagedata + 200
