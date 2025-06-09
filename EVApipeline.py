@@ -513,7 +513,9 @@ def main():
         
     do_archive(cfg)
     
-    cleanup_and_exit(os.path.expanduser('~'), base)
+    
+    if not args.rundate == 'localfolder':
+        cleanup_and_exit(os.path.expanduser('~'), base)
 
 
 if __name__ == '__main__':
