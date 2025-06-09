@@ -1248,4 +1248,7 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         bzesque_file.append(standin_err_array)
 
         output_bzesk_filename=file.replace('EVA','BZESK').replace('SmSTACK','BZESKSmSTACK').replace('.fits','.fits.fz')
-        bzesque_file.writeto(output_bzesk_filename, overwrite=True)
+        try:
+            bzesque_file.writeto(output_bzesk_filename, overwrite=True)
+        except:
+            logging.info("Failed to make bzesk file: " + str(output_bzesk_filename))
