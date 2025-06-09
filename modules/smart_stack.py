@@ -54,6 +54,25 @@ import logging
 kernel = Gaussian2DKernel(x_stddev=2,y_stddev=2)
 from astropy.stats import mad_std
 
+
+def SNPprocess_files_with_timeouts(file_list, timeout_total=120 , maximum_cpus_ever=8):
+    max_workers = max(min(5, os.cpu_count() // 2, maximum_cpus_ever), 1)
+    
+    with Pool(processes=max_workers) as pool:
+        # schedule the entire batch
+        async_map = pool.map_async(saltandpepper_process_file, file_list)
+        try:
+            # wait up to `timeout_total` seconds for *all* files
+            results = async_map.get(timeout=timeout_total)
+        except TimeoutError:
+            logging.info("Salt and Pepper Batch processing timed out; terminating pool.")
+            pool.terminate()  # kills all workers immediately
+            pool.join()
+            # fallback: you could return partial results, or a list of None
+            return [None] * len(file_list)
+    
+    return results
+
 def saltandpepper_process_file(file):
     try:
         imagedata = np.load(file)
@@ -246,9 +265,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
 
     if len(fileList) >= 5 and do_salt_and_pepper:  
         logging.info ('Doing Salt and Pepper Routine')
-        max_workers = max(min(5, os.cpu_count() // 2, maximum_cpus_ever),1)  # Ensures at least 4 processes
-        with Pool(processes=max_workers) as pool:
-            pool.map(saltandpepper_process_file, fileList)
+        SNPprocess_files_with_timeouts(fileList, timeout_total=180, maximum_cpus_ever=maximum_cpus_ever)
 
     # Sort out a new header
     expHolder=[]
