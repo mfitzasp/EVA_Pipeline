@@ -958,8 +958,8 @@ def mitigate_salt_and_pepper_noise(image, threshold=12, imageMode=200, fwhm=12, 
         number_of_salt_and_pepper_pixels=np.sum(mask)
         fraction_of_salt_and_pepper_pixels=number_of_salt_and_pepper_pixels / image.size
         
-        #logging.info ("Fraction of S&P: " + str(fraction_of_salt_and_pepper_pixels))
-        #logging.info ("Threshold      : " + str(threshold))
+        logging.info ("Fraction of S&P: " + str(fraction_of_salt_and_pepper_pixels))
+        logging.info ("Threshold      : " + str(threshold))
         
         
         if fraction_of_salt_and_pepper_pixels < 0.025:
