@@ -1199,12 +1199,18 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         if 'EVA-' in file:
             if telescope == 'lco':
                 origfilename=banzai_image_header['ORIGNAME']
-                standin_err_array=np.load(basedirectory+'/lcoerrays/'+origfilename.replace('.fits.fz','.npy'))
-                # For single images, we actually crop them for wcs flatness
-                cropvalue_h=int(standin_err_array.shape[1]*0.05) + 20
-                cropvalue_w=int(standin_err_array.shape[0]*0.05) + 20
-                standin_err_array = standin_err_array[cropvalue_w:-cropvalue_w,cropvalue_h:-cropvalue_h]
-                standin_err_array= fits.CompImageHDU(standin_err_array)
+                try:
+                    standin_err_array=np.load(basedirectory+'/lcoerrays/'+origfilename.replace('.fits.fz','.npy'))
+                    # For single images, we actually crop them for wcs flatness
+                    cropvalue_h=int(standin_err_array.shape[1]*0.05) + 20
+                    cropvalue_w=int(standin_err_array.shape[0]*0.05) + 20
+                    standin_err_array = standin_err_array[cropvalue_w:-cropvalue_w,cropvalue_h:-cropvalue_h]
+                    standin_err_array= fits.CompImageHDU(standin_err_array)
+                except:
+                    logging.info ("Failed to get LCO VARIANCE ARRAY array"  + str(origfilename))
+                    #logging.info(traceback.format_exc())
+                    standin_err_array=np.empty(banzai_image.shape).fill(1.0)
+                    standin_err_array= fits.CompImageHDU(standin_err_array)
             else:
                 # Create an ERR array (1 if failed to open calibration)
                 try:
