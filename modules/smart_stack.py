@@ -242,12 +242,10 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     except:
         do_salt_and_pepper=False
     
-    logging.info ("SNP?")
-    logging.info (do_salt_and_pepper)
     del prihdr
 
     if len(fileList) >= 5 and do_salt_and_pepper:  
-
+        logging.info ('Doing Salt and Pepper Routine')
         max_workers = max(min(5, os.cpu_count() // 2, maximum_cpus_ever),1)  # Ensures at least 4 processes
         with Pool(processes=max_workers) as pool:
             pool.map(saltandpepper_process_file, fileList)
