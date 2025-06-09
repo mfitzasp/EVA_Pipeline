@@ -69,59 +69,64 @@ def run_source_extractor(file, codedir):
          '-SEEING_FWHM', str(seeingfwhm), '-PHOT_APERTURES', str(photapertures), '-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramsek')], stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, bufsize=0)
     tempprocess.wait()
+    
+    try:
 
-    shutil.copy(str(tempdir+'/test.cat'), file.replace('outputdirectory','fullphotcatalogues').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.fullsek'))
-
-    with open(file.replace('outputdirectory','photometry').replace('EVA-','seaphot-').replace('SmSTACK-','seaphotSmSTACK-').replace('LoSTACK-','seaphotLoSTACK-').replace('.fits','.sea'),'w') as q:
-        with open(file.replace('outputdirectory','photometry').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.sek'),'w') as p:
-            with open(str(tempdir+'/test.cat'), 'r') as f:
-                p.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
-                q.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
-                for line in f:
-                    if not '#' in line:
-                        
-                        splitline=line.split(' ')
-                        splitline=[i for i in splitline if i]
-                        
-                        # First check it rises above S/N = 10
-                        if float(splitline[7])/float(splitline[8]) > 10:
-                            # Check that is plausibly sized
-                            if float(splitline[27]) > 0.5*fwhmpixels:
-
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-        
-        
-                                del splitline[0]
-                                splitline[9]=splitline[9].replace('\n','')
-        
-                                sealine=copy.deepcopy(splitline)
-                                del sealine[6]
-                                del sealine[6]
-                                sealine=','.join(sealine)
-                                q.write(sealine + '\n')
-        
-                                sekline=copy.deepcopy(splitline)
-                                del sekline[4]
-                                del sekline[4]
-                                sekline=','.join(sekline)
-                                p.write(sekline + '\n')
+        shutil.copy(str(tempdir+'/test.cat'), file.replace('outputdirectory','fullphotcatalogues').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.fullsek'))
+    
+        with open(file.replace('outputdirectory','photometry').replace('EVA-','seaphot-').replace('SmSTACK-','seaphotSmSTACK-').replace('LoSTACK-','seaphotLoSTACK-').replace('.fits','.sea'),'w') as q:
+            with open(file.replace('outputdirectory','photometry').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-').replace('LoSTACK-','sekphotLoSTACK-').replace('.fits','.sek'),'w') as p:
+                with open(str(tempdir+'/test.cat'), 'r') as f:
+                    p.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
+                    q.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
+                    for line in f:
+                        if not '#' in line:
+                            
+                            splitline=line.split(' ')
+                            splitline=[i for i in splitline if i]
+                            
+                            # First check it rises above S/N = 10
+                            if float(splitline[7])/float(splitline[8]) > 10:
+                                # Check that is plausibly sized
+                                if float(splitline[27]) > 0.5*fwhmpixels:
+    
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+            
+            
+                                    del splitline[0]
+                                    splitline[9]=splitline[9].replace('\n','')
+            
+                                    sealine=copy.deepcopy(splitline)
+                                    del sealine[6]
+                                    del sealine[6]
+                                    sealine=','.join(sealine)
+                                    q.write(sealine + '\n')
+            
+                                    sekline=copy.deepcopy(splitline)
+                                    del sekline[4]
+                                    del sekline[4]
+                                    sekline=','.join(sekline)
+                                    p.write(sekline + '\n')
+    except:
+        #logging.info("Failed on sek photometry: " + str(file))
+        pass
 
 def run_pre_psfex(file, codedir):
 
@@ -174,43 +179,48 @@ def run_actual_psfex(file, codedir):
     tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(3), '-ANALYSIS_THRESH',str(3), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(saturlevel) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
     
-    shutil.copy(str(tempdir+'/psf.cat'), file.replace('outputdirectory','fullphotcatalogues').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.fullpsx'))
-
-    with open(file.replace('outputdirectory','photometry').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.psx'),'w') as p:
-        with open(str(tempdir+'/psf.cat'), 'r') as f:
-            p.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
-            for line in f:
-                if not '#' in line:
-                    splitline=line.split(' ')
-                    splitline=[i for i in splitline if i]
-                    del splitline[0]
-                    if float(splitline[4]) > 0 and float(splitline[5]) > 0:                        
-                        
-                        # First check it rises above S/N = 30
-                        if float(splitline[4])/float(splitline[5]) > 10:
-                            # Check that is plausibly sized
-                            if float(splitline[24]) > 0.5*fwhmpixels:
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-                                del splitline[-1]
-        
-                                splitline=','.join(splitline)
-                                p.write(splitline + '\n')
+    
+    try:
+        shutil.copy(str(tempdir+'/psf.cat'), file.replace('outputdirectory','fullphotcatalogues').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.fullpsx'))
+    
+        with open(file.replace('outputdirectory','photometry').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-').replace('LoSTACK-','psxphotLoSTACK-').replace('.fits','.psx'),'w') as p:
+            with open(str(tempdir+'/psf.cat'), 'r') as f:
+                p.write('RA,Dec,Xpix,Ypix,Counts,Counts_err,Ra_err,Dec_err' + '\n')
+                for line in f:
+                    if not '#' in line:
+                        splitline=line.split(' ')
+                        splitline=[i for i in splitline if i]
+                        del splitline[0]
+                        if float(splitline[4]) > 0 and float(splitline[5]) > 0:                        
+                            
+                            # First check it rises above S/N = 30
+                            if float(splitline[4])/float(splitline[5]) > 10:
+                                # Check that is plausibly sized
+                                if float(splitline[24]) > 0.5*fwhmpixels:
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+                                    del splitline[-1]
+            
+                                    splitline=','.join(splitline)
+                                    p.write(splitline + '\n')
+    except:
+        pass
+    
     try:
         shutil.rmtree(tempdir)
         shutil.rmtree('outputdirectory/' + tempdir)
