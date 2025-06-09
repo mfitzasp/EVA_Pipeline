@@ -205,9 +205,12 @@ def de_fz_file(infopacket):
         # Make a backup if a reduction fails and we need to test something.
         orig_dir = os.path.join(os.getcwd(), 'originalimages')
         if not os.path.exists(orig_dir):
-            os.makedirs(orig_dir, mode=0o777)
+            os.makedirs(orig_dir, mode=0o777, exist_ok=True)
         # build source path (if `file` isn’t already an absolute path)
-        src = file if os.path.isabs(file) else os.path.join(location, file)        
+        if location == 'local':
+            src = file
+        else:
+            src = file if os.path.isabs(file) else os.path.join(location, file)        
         # destination path: same basename, into originalimages
         dst = os.path.join(orig_dir, os.path.basename(src))        
         # copy (use copy2 to preserve timestamps/permissions too)
