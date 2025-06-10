@@ -232,8 +232,8 @@ def run_astrometry_net(file, codedir):
     # Dump out a temporary image
     astrom_name = Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fits')
     astromfitsfile = base_dir / astrom_name
-    dest_wcs = base_root / orig_name.replace('.fits.fz', '.wcs').replace('.fits', '.wcs')
-    dest_fwhm = base_root / orig_name.replace('.fits.fz', '.fwhm').replace('.fits', '.fwhm')
+    dest_wcs = base_root / orig_name.replace('.fits.fz', '.wcs').replace('.fits', '.wcs').replace('.npy', '.wcs')
+    dest_fwhm = base_root / orig_name.replace('.fits.fz', '.fwhm').replace('.fits', '.fwhm').replace('.npy', '.fwhm')
     wcs_header = None
     cleanhdu=fits.PrimaryHDU()
     cleanhdu.data=np.array(np.load(file.replace('.fits','.npy').replace('ASTROMTABLE','FLATTED')))
