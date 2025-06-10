@@ -112,17 +112,16 @@ def init_config(args):
 
 def prepare_dirs(cfg, args):
     if args.mode == 'online':
-        base = Path(cfg['working_directory']) / args.telescope / args.rundate   
+        base = Path(cfg['working_directory']) / args.telescope / args.rundate
         base.mkdir(parents=True, exist_ok=True)
     else:
-        base=Path(os.getcwd())
+        base = Path.cwd()
     
     for d in [cfg['memmappath'], cfg['local_output_folder'], cfg['shortexposure_output_folder'],
               cfg['largedataset_output_folder'], cfg['ingestion_output_folder'], base/'Targets']:
         Path(d).mkdir(parents=True, exist_ok=True)
     # pipeline working
-    Path(cfg['working_directory'])/ 'PipelineWorking'/ args.telescope
-    os.chdir(base)
+    Path(cfg['working_directory']) / 'PipelineWorking' / args.telescope
     return base
 
 
@@ -172,11 +171,11 @@ def download_phase(cfg, args):
             queue_dl.task_done()
 
 
-def collect_files(cfg, args):
+def collect_files(cfg, args, base):
     if args.rundate == 'localfolder':
-        return glob.glob('*.fit*')
+        return [str(p) for p in Path(base).glob('*.fit*')]
     if args.mode == 'generic':
-        info = json.load(open(os.getcwd()+'/info_for_eva.json'))
+        info = json.load(open(Path(base)/'info_for_eva.json'))
         flist = []
         for f in info['files_to_process']:
             splitfile=f.split('_')
@@ -219,13 +218,13 @@ def collect_files(cfg, args):
         return flist
     
     # if neither of them then return the files in the root of the current basedirectory
-    return glob.glob(os.getcwd() +'/*.fi*')
+    return [str(p) for p in Path(base).glob('*.fi*')]
 
 
-def check_and_deflate(files, cfg, args):
+def check_and_deflate(files, cfg, args, base):
     logging.info('Checking files')
     # Get the subprocess script into the directory
-    shutil.copy(os.path.expanduser(cfg['codedir']) +'/subprocesses/filechecker.py', os.getcwd() +'/filechecker.py')
+    shutil.copy(os.path.expanduser(cfg['codedir']) + '/subprocesses/filechecker.py', Path(base) / 'filechecker.py')
     wait_for_resources()
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
@@ -239,24 +238,25 @@ def check_and_deflate(files, cfg, args):
     headers = []
     if cfg['multiprocess']['de_fz_file']:
         with Pool(n) as p:
-            headers = p.map(de_fz_file, val)
+            headers = p.starmap(de_fz_file, [(x, base) for x in val])
     else:
-        headers = [de_fz_file(x) for x in val]
+        headers = [de_fz_file(x, base) for x in val]
     return list(fps), [h for h in headers if h]
 
 
 def target_phase(base):
-    tdir = base/'Targets'
+    tdir = Path(base) / 'Targets'
     shutil.rmtree(tdir, ignore_errors=True)
-    tdir.mkdir()
-    for f in glob.glob('*.np*'):
-        shutil.move(f, tdir/f)
-    os.chdir(tdir)
+    tdir.mkdir(parents=True, exist_ok=True)
+    for f in Path(base).glob('*.np*'):
+        shutil.move(str(f), tdir / f.name)
+    return tdir
 
 
-def pre_astrometry(files, headers, cfg, args):
+def pre_astrometry(tdir, headers, cfg, args):
     logging.info('Pre-Astrometry')
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
+    files = [str(p) for p in Path(tdir).glob('*.npy')]
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
     fn = process_lco_preastrom if args.telescope=='lco' else process_preastrom
@@ -268,13 +268,11 @@ def pre_astrometry(files, headers, cfg, args):
             fn(f)
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
     n2 = max(1, min(math.floor(cpu*0.25), len(files)))
-    
-    # build a list of (filename, codedir) tuples
-    files=glob.glob(os.getcwd() +'/*.npy')
-    args = [(fn, cfg['codedir']) for fn in files]    
+
+    args_list = [(fn, cfg['codedir']) for fn in files]
     
     with Pool(n2) as p:
-        p.starmap(run_astrometry_net, args)
+        p.starmap(run_astrometry_net, args_list)
         
     return headers
 
@@ -331,17 +329,19 @@ def header_merge(headers, base):
         out.append(h)
     return out
 
-def cleanup_intermediate():
-    for pat in ['*.fi*','*.npy','*.wcs']:
-        for f in glob.glob(pat):
-            try: os.remove(f)
-            except: pass
+def cleanup_intermediate(base):
+    for pat in ['*.fi*', '*.npy', '*.wcs']:
+        for f in Path(base).glob(pat):
+            try:
+                f.unlink()
+            except Exception:
+                pass
 
-def make_dirs_output():
-    for d in ["workingdirectory","outputdirectory","sstacksdirectory","lstacksdirectory",
-              "cimagesdirectory","previews","thumbnails","smalljpgs","colours",
-              "photometry","fullphotcatalogues"]:
-        Path(d).mkdir(exist_ok=True)
+def make_dirs_output(base):
+    for d in ["workingdirectory", "outputdirectory", "sstacksdirectory", "lstacksdirectory",
+              "cimagesdirectory", "previews", "thumbnails", "smalljpgs", "colours",
+              "photometry", "fullphotcatalogues"]:
+        Path(base, d).mkdir(exist_ok=True)
 
 def enrich_build(headers, cfg, args):
     logging.info('Value-add to headers and naming')
@@ -431,14 +431,14 @@ def construct_images(headers, human_names, cfg, args, base):
     except:
         logging.info("Failed on making previews... usually due to blank images")
 
-def do_photometry(cfg):
+def do_photometry(cfg, base):
     logging.info('Photometry')
     
     # Can't find a way around actually copying the file into the directory
-    shutil.copy(os.path.expanduser(cfg['codedir']) +'/photometryparams/default.psfex','default.psfex')
+    shutil.copy(os.path.expanduser(cfg['codedir']) + '/photometryparams/default.psfex', Path(base)/'default.psfex')
     
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
-    files = glob.glob('outputdirectory/*.fits')
+    files = glob.glob(str(Path(base)/'outputdirectory/*.fits'))
     # don't photometer variance frames
     files = [f for f in files if not os.path.basename(f).startswith('variance_')]
     cpu = os.cpu_count() or 1
@@ -453,24 +453,24 @@ def do_photometry(cfg):
         p.starmap(run_actual_psfex, [(f, cfg['codedir']) for f in files])
         
         
-def do_banzai_file_type(cfg, telescope):
+def do_banzai_file_type(cfg, telescope, base):
     logging.info('Banzai-esque Files')
-    files = glob.glob('outputdirectory/*.fits')
+    files = glob.glob(str(Path(base)/'outputdirectory/*.fits'))
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
     
     banzai_list=[]
     for file in files:
-        banzai_list.append([file, telescope, os.getcwd(), cfg['calibration_directory']])
+        banzai_list.append([file, telescope, str(base), cfg['calibration_directory']])
     with Pool(n) as p:
         p.starmap(make_banzai_file_out_of_EVA, banzai_list)
 
 
-def do_archive(cfg):
+def do_archive(cfg, base):
     logging.info('Archive preparation')
     wait_for_diskspace(cfg['working_directory'], 0.9)
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
-    files = glob.glob('outputdirectory/*.fit*')
+    files = glob.glob(str(Path(base)/'outputdirectory/*.fit*'))
     tasks = [[f, cfg['largedataset_output_folder'], cfg['shortexposure_output_folder'], cfg['ingestion_output_folder'], cfg['local_output_folder'], True, True] # The two trues are local copy then ingest... will be a config soon
              for f in files]
     cpu = os.cpu_count() or 1
@@ -489,32 +489,28 @@ def main():
     setup_logging()
     cfg = init_config(args)
     base = prepare_dirs(cfg, args)
-    os.chdir(base)
     download_phase(cfg, args)
-    files = collect_files(cfg, args)
+    files = collect_files(cfg, args, base)
     print (files)
-    files, headers = check_and_deflate(files, cfg, args)
-    target_phase(base)
+    files, headers = check_and_deflate(files, cfg, args, base)
+    tdir = target_phase(base)
     # Pre-astrometry and WCS generation run inside Targets dir
-    files=glob.glob(os.getcwd() +'/*.npy')
     wait_for_resources()
-    headers = pre_astrometry(files, headers, cfg, args)
+    headers = pre_astrometry(tdir, headers, cfg, args)
     headers = header_merge(headers, base)
-    # Return to base working directory before subsequent phases
-    os.chdir(base)
-    cleanup_intermediate()
-    make_dirs_output()
+    cleanup_intermediate(base)
+    make_dirs_output(base)
     headers, human_names = enrich_build(headers, cfg, args)
     wait_for_resources()
     construct_images(headers, human_names, cfg, args, base)
     wait_for_resources()
-    do_photometry(cfg)
+    do_photometry(cfg, base)
     
     # Make BANZAI files
     wait_for_resources()
-    do_banzai_file_type(cfg, args.telescope)
+    do_banzai_file_type(cfg, args.telescope, base)
         
-    do_archive(cfg)
+    do_archive(cfg, base)
     
     
     if not args.rundate == 'localfolder':
