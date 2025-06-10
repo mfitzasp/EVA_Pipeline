@@ -234,13 +234,13 @@ def run_astrometry_net(file, codedir):
     # run source extractor on image
     tempprocess = subprocess.Popen(
         ['source-extractor', astromfitsfile, '-c', os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramastrom'),
-         '-CATALOG_NAME', str(tempdir + '/test.cat'), '-SATUR_LEVEL', str(image_saturation_level), '-GAIN', str(gain), '-READNOISE', str(rdnoise), '-BACKPHOTO_TYPE','LOCAL', '-DETECT_THRESH', str(1.5), '-ANALYSIS_THRESH',str(1.5),
+         '-CATALOG_NAME', str(tempdir / 'test.cat'), '-SATUR_LEVEL', str(image_saturation_level), '-GAIN', str(gain), '-READNOISE', str(rdnoise), '-BACKPHOTO_TYPE','LOCAL', '-DETECT_THRESH', str(1.5), '-ANALYSIS_THRESH',str(1.5),
          '-SEEING_FWHM', str(2.0), '-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')], stdin=subprocess.PIPE,
         stdout=subprocess.PIPE, bufsize=0)
     tempprocess.wait() 
         
     # Read the ASCII catalog
-    acatalog = Table.read(tempdir+"/test.cat", format='ascii')
+    acatalog = Table.read(tempdir / "test.cat", format='ascii')
     # Reject poor  ( <10 SNR) sources
     acatalog=acatalog[acatalog['FLUX_AUTO']/acatalog['FLUXERR_AUTO'] > 10]
 
@@ -256,19 +256,19 @@ def run_astrometry_net(file, codedir):
         minarea= 1.0 * psfarea    
         backsize= 4 * fwhmpixels
     
-        tempprocess=subprocess.Popen(['source-extractor' , astromfitsfile ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx'), '-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(image_saturation_level) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+        tempprocess=subprocess.Popen(['source-extractor' , astromfitsfile ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx'), '-CATALOG_NAME',str(tempdir / 'psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(image_saturation_level) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
         
-        tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat', '-c',os.path.expanduser(codedir) +'/photometryparams/default.psfex','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+        tempprocess=subprocess.Popen(['psfex', str(tempdir / 'psf.cat'), '-c',os.path.expanduser(codedir) +'/photometryparams/default.psfex','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
         
         photapertures=max(3.0/float(pixscale),3)
         
-        tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', astromfitsfile ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx'),'-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(image_saturation_level) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+        tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir / 'psf.psf'), astromfitsfile ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx'),'-CATALOG_NAME',str(tempdir / 'psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(image_saturation_level) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
 
         # pick up the catalog again and trim it up
-        acatalog = Table.read(tempdir+"/psf.cat", format='ascii')
+        acatalog = Table.read(tempdir / "psf.cat", format='ascii')
         
         # Remove index, RA and DEC columns
         acatalog.remove_columns(acatalog.colnames[:3])
@@ -315,7 +315,7 @@ def run_astrometry_net(file, codedir):
     sources=Table(sources)
 
     # Write out to fits
-    sources.write(tempdir+ "/test.fits", format="fits", overwrite=True)
+    sources.write(tempdir / "test.fits", format="fits", overwrite=True)
     
     fwhm_values = acatalog['FWHM_IMAGE']  # Extract FWHM values
     
@@ -369,7 +369,7 @@ def run_astrometry_net(file, codedir):
     # Try once with tweak-order [0]   
     os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[0]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
     
-    if os.path.exists(tempdir + '/test.wcs'):
+    if os.path.exists(tempdir / 'test.wcs'):
         logging.info("A successful solve for " + astromfitsfile)
         os.remove(astromfitsfile)
         shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
@@ -377,7 +377,7 @@ def run_astrometry_net(file, codedir):
         # Try once with tweak-order [1]    
         os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[1]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
         
-        if os.path.exists(tempdir + '/test.wcs'):
+        if os.path.exists(tempdir / 'test.wcs'):
             logging.info("A successful solve for " + astromfitsfile)
             os.remove(astromfitsfile)
             shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
@@ -385,7 +385,7 @@ def run_astrometry_net(file, codedir):
             # Try once with tweak-order 4    
             os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order 4 --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
             
-            if os.path.exists(tempdir + '/test.wcs'):
+            if os.path.exists(tempdir / 'test.wcs'):
                 logging.info("A successful solve for " + astromfitsfile)
                 os.remove(astromfitsfile)
                 shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
