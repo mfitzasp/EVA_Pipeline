@@ -370,7 +370,7 @@ def run_astrometry_net(file, codedir):
     os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[0]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
     
     if os.path.exists(tempdir / 'test.wcs'):
-        logging.info("A successful solve for " + astromfitsfile)
+        logging.info("A successful solve for " + str(astromfitsfile))
         os.remove(astromfitsfile)
         shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
     else:
@@ -378,7 +378,7 @@ def run_astrometry_net(file, codedir):
         os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[1]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
         
         if os.path.exists(tempdir / 'test.wcs'):
-            logging.info("A successful solve for " + astromfitsfile)
+            logging.info("A successful solve for " + str(astromfitsfile))
             os.remove(astromfitsfile)
             shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
         else:
@@ -386,11 +386,11 @@ def run_astrometry_net(file, codedir):
             os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order 4 --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
             
             if os.path.exists(tempdir / 'test.wcs'):
-                logging.info("A successful solve for " + astromfitsfile)
+                logging.info("A successful solve for " + str(astromfitsfile))
                 os.remove(astromfitsfile)
                 shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
             else:
-                logging.info("A failed solve for " + astromfitsfile)
+                logging.info("A failed solve for " + str(astromfitsfile))
                 os.remove(astromfitsfile)                   
 
     for f in tempdir.glob('*'):
