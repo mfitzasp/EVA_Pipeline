@@ -33,6 +33,7 @@ import psutil
 import subprocess
 from datetime import datetime
 import os
+from pathlib import Path
 import shutil
 import sys
 import traceback
@@ -149,7 +150,7 @@ def test_connect(host='http://google.com'):
     except:
         return False
     
-def de_fz_file(infopacket):
+def de_fz_file(infopacket, base):
     """
     Processes and converts a `.fits.fz` file into a `.npy` file by extracting image data and updating the header.
 
@@ -203,9 +204,8 @@ def de_fz_file(infopacket):
         (file,location) = infopacket
         
         # Make a backup if a reduction fails and we need to test something.
-        orig_dir = os.path.join(os.getcwd(), 'originalimages')
-        if not os.path.exists(orig_dir):
-            os.makedirs(orig_dir, mode=0o777, exist_ok=True)
+        orig_dir = Path(base) / 'originalimages'
+        orig_dir.mkdir(parents=True, exist_ok=True)
         # build source path (if `file` isn’t already an absolute path)
         if location == 'local':
             src = file
@@ -238,15 +238,13 @@ def de_fz_file(infopacket):
             imagtemp[bpm] = np.nan
             logging.info ("applied LCO bpm")
             
-            if not os.path.exists(os.getcwd()+'/lcoerrays'):
-                os.makedirs(os.getcwd()+'/lcoerrays', mode=0o777)
-            
-            np.save(os.getcwd()+'/lcoerrays/' + file.split('/')[-1].replace('.fits.fz','.npy'), np.asarray(hdul[4].data))
-            
-            if not os.path.exists(os.getcwd()+'/lcobpms'):
-                os.makedirs(os.getcwd()+'/lcobpms', mode=0o777)
-            
-            np.save(os.getcwd()+'/lcobpms/' + file.split('/')[-1].replace('.fits.fz','.npy'), np.asarray(hdul[3].data))
+            lcoerr = Path(base) / 'lcoerrays'
+            lcoerr.mkdir(parents=True, exist_ok=True)
+            np.save(lcoerr / file.split('/')[-1].replace('.fits.fz','.npy'), np.asarray(hdul[4].data))
+
+            lcobpm = Path(base) / 'lcobpms'
+            lcobpm.mkdir(parents=True, exist_ok=True)
+            np.save(lcobpm / file.split('/')[-1].replace('.fits.fz','.npy'), np.asarray(hdul[3].data))
             
         except:
             logging.info ("Did not apply an LCO bpm")
@@ -313,7 +311,20 @@ def de_fz_file(infopacket):
         except:
             gain_string=1.0    
         
-        np.save('EXP' + str(round(tempheader['EXPTIME'],3)) + 'EXPDOCOSMIC' + str(tempheader['DOCOSMIC']) + 'DOCOSMICFILTER' + tempheader['FILTER'].split('_')[0] + 'FILTERSATURATE' + str(int(tempheader['SATURATE'])) + 'SATURATE' + 'RAdeg'+str(round(tempheader['RAdeg'],3)) + 'RAdegDECdeg'+ str(round(tempheader['DECdeg'],3)) + 'DECdegGAIN' + str(gain_string) + 'GAINRDNOISE' + str(readnoise_string) + 'RDNOISEIMAGEW' + str(tempheader['NAXIS1']) + 'IMAGEWIMAGEH' + str(tempheader['NAXIS2']) + 'IMAGEHPIXSCALE' + str(tempheader['PIXSCALE']) + 'PIXSCALE'+ file.split('/')[-1].replace('.fits.fz','.npy').replace('.fits','.npy'), imagtemp)
+        np.save(Path(base) / (
+            'EXP' + str(round(tempheader['EXPTIME'],3)) +
+            'EXPDOCOSMIC' + str(tempheader['DOCOSMIC']) +
+            'DOCOSMICFILTER' + tempheader['FILTER'].split('_')[0] +
+            'FILTERSATURATE' + str(int(tempheader['SATURATE'])) + 'SATURATE' +
+            'RAdeg' + str(round(tempheader['RAdeg'],3)) +
+            'RAdegDECdeg' + str(round(tempheader['DECdeg'],3)) +
+            'DECdegGAIN' + str(gain_string) + 'GAINRDNOISE' +
+            str(readnoise_string) + 'RDNOISEIMAGEW' +
+            str(tempheader['NAXIS1']) + 'IMAGEWIMAGEH' +
+            str(tempheader['NAXIS2']) + 'IMAGEHPIXSCALE' +
+            str(tempheader['PIXSCALE']) + 'PIXSCALE' +
+            file.split('/')[-1].replace('.fits.fz','.npy').replace('.fits','.npy')
+        ), imagtemp)
         final_header=copy.deepcopy(tempheader)
 
         if location != 'local' and location != 'generic':

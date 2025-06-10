@@ -31,6 +31,7 @@ Paper on OSSPipeline: https://rtsre.org/index.php/rtsre/article/view/12/12
 import numpy as np
 from modules.image_functions import find_nan_crop_limits, thresh, mask_cosmics
 import os
+from pathlib import Path
 import traceback
 from astropy.io import fits
 import time
@@ -98,7 +99,8 @@ def process_preastrom(file):
             except:
                 logging.info ("did not do cosmics. Usually 'cause the gain, readnoise or pixel scale is unknown")
 
-        np.save('FLATTED'+ file.split('/')[-1].split('FILTER')[-1], objdeflat)
+        out_path = Path(file).with_name('FLATTED' + file.split('/')[-1].split('FILTER')[-1])
+        np.save(out_path, objdeflat)
         del hdu1
         try:
             os.remove(file)
@@ -153,7 +155,8 @@ def process_lco_preastrom(file):
         # At this point whack in cosmics. 
         if exptime >= 10:
             hdu1 = mask_cosmics(hdu1, gain=gain, rdnoise=rdnoise, saturate=image_saturation_level, imageMode=imageMode, pixscale=pixscale, telescopename='lco')
-        np.save('FLATTED'+ file.split('/')[-1].split('FILTER')[-1], hdu1)
+        out_path = Path(file).with_name('FLATTED' + file.split('/')[-1].split('FILTER')[-1])
+        np.save(out_path, hdu1)
         try:
             os.remove(file)
         except:
@@ -161,7 +164,8 @@ def process_lco_preastrom(file):
     except:
         logging.info("Failed to threshold this image")
         logging.info("Tends not to be a fatal error but due to a mostly blank image")
-        np.save('FLATTED'+ file.split('/')[-1].split('FILTER')[-1], hdu1)
+        out_path = Path(file).with_name('FLATTED' + file.split('/')[-1].split('FILTER')[-1])
+        np.save(out_path, hdu1)
         try:
             os.remove(file)
         except:
@@ -214,15 +218,15 @@ def run_astrometry_net(file, codedir):
     imagew = int(file.split('IMAGEW')[1])
     pixlow = pixscale * 0.9
     pixhigh = pixscale * 1.1
-    tempdir = os.getcwd() + '/' + str(time.time()).replace('.', 'd') + file.split('PIXSCALE')[-1].replace('.', 'd') + str(np.random.randint(10000))
-    if not os.path.exists(tempdir):
-        os.makedirs(tempdir, mode=0o777)
+    base_dir = Path(file).parent
+    tempdir = base_dir / (str(time.time()).replace('.', 'd') + file.split('PIXSCALE')[-1].replace('.', 'd') + str(np.random.randint(10000)))
+    tempdir.mkdir(parents=True, exist_ok=True)
     gain = float(file.split('GAIN')[1])
     rdnoise = float(file.split('RDNOISE')[1])
     image_saturation_level = float(file.split('SATURATE')[1])
 
     # Dump out a temporary image
-    astromfitsfile=(file.split('PIXSCALE')[-1].replace('.npy','.fits'))    
+    astromfitsfile = base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fits'))
     cleanhdu=fits.PrimaryHDU()
     cleanhdu.data=np.array(np.load(file.replace('.fits','.npy').replace('ASTROMTABLE','FLATTED')))
     cleanhdu.writeto(astromfitsfile)
@@ -336,8 +340,8 @@ def run_astrometry_net(file, codedir):
         picklefwhm["FWHMasec"] = (pixscale*fwhmpix, 'FWHM in arcseconds')
         picklefwhm["FWHMstd"] = (pixscale*fwhmstd, 'FWHM standard deviation in arcseconds')
         picklefwhm["NSTARS"] = ( len(filtered_fwhm), 'Number of star-like sources in image')
-    
-        with open(file.split('/')[-1].split('PIXSCALE')[-1].replace('.npy','.fwhm'), 'wb') as fp:
+
+        with open(base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fwhm')), 'wb') as fp:
             pickle.dump(picklefwhm, fp)
     
     except:
@@ -351,7 +355,7 @@ def run_astrometry_net(file, codedir):
         picklefwhm["FWHMstd"] = ( -99, 'FWHM standard deviation in arcseconds')
         picklefwhm["NSTARS"] = ( len(filtered_fwhm ), 'Number of star-like sources in image')
         
-        with open(file.split('/')[-1].split('PIXSCALE')[-1].replace('.npy','.fwhm'), 'wb') as fp: # os.getcwd() + '/' + file.replace('.fits', '.wcs').replace('.fit', '.fwhm')
+        with open(base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fwhm')), 'wb') as fp:
             pickle.dump(picklefwhm, fp)
 
     # Use tweak order 2 in smaller fields of view and tweak order 3 in larger fields.
@@ -363,46 +367,45 @@ def run_astrometry_net(file, codedir):
         tweakorder=[2,3]
     
     # Try once with tweak-order [0]   
-    os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir + '/' 'test.fits') +" -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " +str (tweakorder[0]) + " --width " +str(imagew) +" --height " +str(imageh) +" --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots " )
+    os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[0]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
     
     if os.path.exists(tempdir + '/test.wcs'):
         logging.info("A successful solve for " + astromfitsfile)
         os.remove(astromfitsfile)
-        shutil.move(tempdir + '/test.wcs', os.getcwd() + '/' + astromfitsfile.replace('.fits', '.wcs').replace('.fit', '.wcs'))
+        shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
     else:
         # Try once with tweak-order [1]    
-        os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir + '/' 'test.fits') +" -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " +str (tweakorder[1]) + " --width " +str(imagew) +" --height " +str(imageh) +" --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots " )
+        os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[1]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
         
         if os.path.exists(tempdir + '/test.wcs'):
             logging.info("A successful solve for " + astromfitsfile)
             os.remove(astromfitsfile)
-            shutil.move(tempdir + '/test.wcs', os.getcwd() + '/' + astromfitsfile.replace('.fits', '.wcs').replace('.fit', '.wcs'))
+            shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
         else:
             # Try once with tweak-order 4    
-            os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir + '/' 'test.fits') +" -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " +str (4) + " --width " +str(imagew) +" --height " +str(imageh) +" --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots " )
+            os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order 4 --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
             
             if os.path.exists(tempdir + '/test.wcs'):
                 logging.info("A successful solve for " + astromfitsfile)
                 os.remove(astromfitsfile)
-                shutil.move(tempdir + '/test.wcs', os.getcwd() + '/' + astromfitsfile.replace('.fits', '.wcs').replace('.fit', '.wcs'))
+                shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
             else:
                 logging.info("A failed solve for " + astromfitsfile)
                 os.remove(astromfitsfile)                   
 
-    files = glob.glob(tempdir + '/*.*')
-    for f in files:
+    for f in tempdir.glob('*'):
         try:
-            os.remove(f)
-        except:
+            f.unlink()
+        except Exception:
             pass
 
     try:
-        os.rmdir(tempdir)
-    except:
+        tempdir.rmdir()
+    except Exception:
         pass
 
-    # Remove masters directory
+    # Remove masters directory (again, ignore errors)
     try:
-        shutil.rmtree(tempdir)
-    except:
+        shutil.rmtree(tempdir, ignore_errors=True)
+    except Exception:
         pass
