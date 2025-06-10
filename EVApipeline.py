@@ -330,17 +330,19 @@ def header_merge(headers, base):
         # Merge WCS if present
         try:
             wfile = name.replace('.fits.fz', '.wcs').replace('.fits', '.wcs')
-            if os.path.exists(wfile):
-                wh = fits.open(wfile)[0].header
+            wfile_path = Path(base) / wfile
+            if wfile_path.exists():
+                wh = fits.open(wfile_path)[0].header
                 h.update(wcs.WCS(wh).to_header(relax=True))
-                os.remove(wfile)
+                wfile_path.unlink()
         except:
             print (traceback.format_exc())
         # Merge FWHM info if present
         try:
             ffile = name.replace('.fits.fz', '.fwhm').replace('.fits', '.fwhm')
-            if os.path.exists(ffile):
-                ff = pickle.load(open(ffile, 'rb'))
+            ffile_path = Path(base) / ffile
+            if ffile_path.exists():
+                ff = pickle.load(open(ffile_path, 'rb'))
                 for k in ['SKYLEVEL', 'FWHM', 'FWHMpix', 'FWHMasec', 'FWHMstd', 'NSTARS']:
                     # h[k] = ff.get(k, 'Unknown')
                     val = ff.get(k, None)
@@ -354,7 +356,7 @@ def header_merge(headers, base):
                             h[k] = val
                         except:
                             h[k] = 'nan'
-                os.remove(ffile)
+                ffile_path.unlink()
         except:
             print (traceback.format_exc())
         
