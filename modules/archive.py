@@ -61,15 +61,7 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
             except:
                 seq_number='_unknown'
         
-            if not os.path.exists(local_output_folder):
-                os.makedirs(local_output_folder , mode=0o777)
-        
-            if not os.path.exists(local_output_folder + '/' + dayobs ):
-                os.makedirs(local_output_folder + '/' + dayobs, mode=0o777)
-        
-            # Copy the fits over
-            if not os.path.exists(local_output_folder + '/' + dayobs + '/fits'):
-                os.makedirs(local_output_folder + '/' + dayobs + '/fits', mode=0o777)
+            # Copy the fits over (directories assumed pre-created)
             shutil.copy(file, local_output_folder + '/' + dayobs + '/fits/' + file.split('/')[-1].replace('.fits',seq_number+'.fits'))
     
         # Need to replace this hack by number of images requested by LCO. LCO does not have nexpreq header
@@ -130,10 +122,8 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
             'SmSTACK-', 'sekphotSmSTACK-').replace('LoSTACK-', 'sekphotLoSTACK-')
                                                                                                       
         if os.path.exists(tempfilename):
-            
+
             if local_copy:
-                if not os.path.exists(local_output_folder + '/' + dayobs + '/photometry'):
-                    os.makedirs(local_output_folder + '/' + dayobs + '/photometry', mode=0o777)
                 shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/photometry/' + tempfilename.split('/')[-1].replace('.sek',seq_number+'.sek'))
             
             headerdict['RLEVEL'] = 82
@@ -153,10 +143,8 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
                                                                                                       'psxphot-').replace(
             'SmSTACK-', 'psxphotSmSTACK-').replace('LoSTACK-', 'psxphotLoSTACK-')
         if os.path.exists(tempfilename):
-            
+
             if local_copy:
-                if not os.path.exists(local_output_folder + '/' + dayobs + '/photometry'):
-                    os.makedirs(local_output_folder + '/' + dayobs + '/photometry', mode=0o777)
                 shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/photometry/' + tempfilename.split('/')[-1].replace('.psx',seq_number+'.psx'))
             
             headerdict['RLEVEL'] = 83
@@ -178,10 +166,8 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
             'SmSTACK-', 'pngSmSTACK-')
                                                                                                         
         if os.path.exists(tempfilename):
-            
+
             if local_copy:
-                if not os.path.exists(local_output_folder + '/' + dayobs + '/pngs'):
-                    os.makedirs(local_output_folder + '/' + dayobs + '/pngs', mode=0o777)
                 shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/pngs/' + tempfilename.split('/')[-1].replace('.png',seq_number+'.png'))
             
             headerdict['RLEVEL'] = 75
@@ -200,10 +186,8 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
             'SmSTACK-', 'smalljpgSmSTACK-')
                                                                                                          
         if os.path.exists(tempfilename):
-            
+
             if local_copy:
-                if not os.path.exists(local_output_folder + '/' + dayobs + '/previews'):
-                    os.makedirs(local_output_folder + '/' + dayobs + '/previews', mode=0o777)
                 shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/previews/' + tempfilename.split('/')[-1].replace('.jpg',seq_number+'.jpg'))
             
             headerdict['RLEVEL'] = 74
@@ -222,10 +206,8 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
                                                                                                       'thumbnail-').replace(
             'SmSTACK-', 'thumbnailSmSTACK-').replace('LoSTACK-', 'thumbnailLoSTACK-')
         if os.path.exists(tempfilename):
-            
+
             if local_copy:
-                if not os.path.exists(local_output_folder + '/' + dayobs + '/thumbnails'):
-                    os.makedirs(local_output_folder + '/' + dayobs + '/thumbnails', mode=0o777)
                 shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/thumbnails/' + tempfilename.split('/')[-1].replace('.jpg',seq_number+'.jpg'))
             
             headerdict['RLEVEL'] = 73

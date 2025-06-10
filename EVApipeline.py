@@ -125,6 +125,29 @@ def prepare_dirs(cfg, args):
     return base
 
 
+def prepare_local_output_dirs(files, cfg):
+    """Create DAY-OBS specific directories inside the local output folder."""
+    if not cfg.get('copy_to_a_local_output_folder', False):
+        return
+
+    dayobs_set = set()
+    for f in files:
+        try:
+            hd = fits.open(f)
+            hdr = hd[1].header if ('BZESK' in f) or ('.fits.fz' in f) else hd[0].header
+            day = hdr.get('DAY-OBS')
+            if day:
+                dayobs_set.add(str(day))
+            hd.close()
+        except Exception:
+            continue
+
+    for d in dayobs_set:
+        base = Path(cfg['local_output_folder']) / d
+        for sub in ['fits', 'photometry', 'pngs', 'previews', 'thumbnails']:
+            (base / sub).mkdir(parents=True, exist_ok=True)
+
+
 def download_phase(cfg, args):
     if args.mode != 'online': return
     session = requests.Session()
@@ -216,7 +239,7 @@ def collect_files(cfg, args, base):
             else:
                 flist.append(str(p))
         return flist
-    
+
     # if neither of them then return the files in the root of the current basedirectory
     return [str(p) for p in Path(base).glob('*.fi*')]
 
@@ -491,6 +514,7 @@ def main():
     base = prepare_dirs(cfg, args)
     download_phase(cfg, args)
     files = collect_files(cfg, args, base)
+    prepare_local_output_dirs(files, cfg)
     print (files)
     files, headers = check_and_deflate(files, cfg, args, base)
     tdir = target_phase(base)
