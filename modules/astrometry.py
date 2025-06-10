@@ -219,6 +219,8 @@ def run_astrometry_net(file, codedir):
     pixlow = pixscale * 0.9
     pixhigh = pixscale * 1.1
     base_dir = Path(file).parent
+    base_root = base_dir.parent
+    orig_name = Path(file).name.split('PIXSCALE')[-1].replace('.npy', '')
     tempdir = base_dir / (str(time.time()).replace('.', 'd') + file.split('PIXSCALE')[-1].replace('.', 'd') + str(np.random.randint(10000)))
     tempdir.mkdir(parents=True, exist_ok=True)
     gain = float(file.split('GAIN')[1])
@@ -226,7 +228,11 @@ def run_astrometry_net(file, codedir):
     image_saturation_level = float(file.split('SATURATE')[1])
 
     # Dump out a temporary image
-    astromfitsfile = base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fits'))
+    astrom_name = Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fits')
+    astromfitsfile = base_dir / astrom_name
+    dest_wcs = base_root / orig_name.replace('.fits.fz', '.wcs').replace('.fits', '.wcs')
+    dest_fwhm = base_root / orig_name.replace('.fits.fz', '.fwhm').replace('.fits', '.fwhm')
+    wcs_header = None
     cleanhdu=fits.PrimaryHDU()
     cleanhdu.data=np.array(np.load(file.replace('.fits','.npy').replace('ASTROMTABLE','FLATTED')))
     cleanhdu.writeto(astromfitsfile)
@@ -341,8 +347,10 @@ def run_astrometry_net(file, codedir):
         picklefwhm["FWHMstd"] = (pixscale*fwhmstd, 'FWHM standard deviation in arcseconds')
         picklefwhm["NSTARS"] = ( len(filtered_fwhm), 'Number of star-like sources in image')
 
-        with open(base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fwhm')), 'wb') as fp:
+        temp_fwhm = base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fwhm'))
+        with open(temp_fwhm, 'wb') as fp:
             pickle.dump(picklefwhm, fp)
+        shutil.move(str(temp_fwhm), dest_fwhm)
     
     except:
         logging.info(traceback.format_exc())
@@ -355,8 +363,10 @@ def run_astrometry_net(file, codedir):
         picklefwhm["FWHMstd"] = ( -99, 'FWHM standard deviation in arcseconds')
         picklefwhm["NSTARS"] = ( len(filtered_fwhm ), 'Number of star-like sources in image')
         
-        with open(base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fwhm')), 'wb') as fp:
+        temp_fwhm = base_dir / (Path(file).name.split('PIXSCALE')[-1].replace('.npy','.fwhm'))
+        with open(temp_fwhm, 'wb') as fp:
             pickle.dump(picklefwhm, fp)
+        shutil.move(str(temp_fwhm), dest_fwhm)
 
     # Use tweak order 2 in smaller fields of view and tweak order 3 in larger fields.
     sizewidest= max(imageh*pixscale, imagew*pixscale) / 3600
@@ -372,7 +382,9 @@ def run_astrometry_net(file, codedir):
     if os.path.exists(tempdir / 'test.wcs'):
         logging.info("A successful solve for " + str(astromfitsfile))
         os.remove(astromfitsfile)
-        shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
+        shutil.move(str(tempdir / 'test.wcs'), dest_wcs)
+        wh = fits.open(dest_wcs)[0].header
+        wcs_header = wcs.WCS(wh).to_header(relax=True)
     else:
         # Try once with tweak-order [1]    
         os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[1]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
@@ -380,7 +392,9 @@ def run_astrometry_net(file, codedir):
         if os.path.exists(tempdir / 'test.wcs'):
             logging.info("A successful solve for " + str(astromfitsfile))
             os.remove(astromfitsfile)
-            shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
+            shutil.move(str(tempdir / 'test.wcs'), dest_wcs)
+            wh = fits.open(dest_wcs)[0].header
+            wcs_header = wcs.WCS(wh).to_header(relax=True)
         else:
             # Try once with tweak-order 4    
             os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order 4 --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
@@ -388,7 +402,9 @@ def run_astrometry_net(file, codedir):
             if os.path.exists(tempdir / 'test.wcs'):
                 logging.info("A successful solve for " + str(astromfitsfile))
                 os.remove(astromfitsfile)
-                shutil.move(str(tempdir / 'test.wcs'), astromfitsfile.with_suffix('.wcs'))
+                shutil.move(str(tempdir / 'test.wcs'), dest_wcs)
+                wh = fits.open(dest_wcs)[0].header
+                wcs_header = wcs.WCS(wh).to_header(relax=True)
             else:
                 logging.info("A failed solve for " + str(astromfitsfile))
                 os.remove(astromfitsfile)                   
@@ -409,3 +425,5 @@ def run_astrometry_net(file, codedir):
         shutil.rmtree(tempdir, ignore_errors=True)
     except Exception:
         pass
+
+    return orig_name, wcs_header

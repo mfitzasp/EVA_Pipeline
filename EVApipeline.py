@@ -298,7 +298,13 @@ def pre_astrometry(tdir, headers, cfg, args):
     args_list = [(f, cfg['codedir']) for f in files]
 
     with Pool(n2) as p:
-        p.starmap(run_astrometry_net, args_list)
+        results = p.starmap(run_astrometry_net, args_list)
+
+    # Map returned WCS headers back to their originating FITS files
+    wcs_map = {name: hdr for name, hdr in results if hdr}
+    for h in headers:
+        if h['ORIGNAME'] in wcs_map:
+            h.update(wcs_map[h['ORIGNAME']])
         
     return headers
 
@@ -517,6 +523,11 @@ def main():
     base = prepare_dirs(cfg, args)
     download_phase(cfg, args)
     files = collect_files(cfg, args, base)
+    if not files:
+        logging.info('No files found to process. Exiting early.')
+        if args.rundate != 'localfolder':
+            cleanup_and_exit(os.path.expanduser('~'), base)
+        return
     prepare_local_output_dirs(files, cfg)
     print (files)
     files, headers = check_and_deflate(files, cfg, args, base)
