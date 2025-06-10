@@ -303,8 +303,8 @@ def pre_astrometry(tdir, headers, cfg, args):
     # Map returned WCS headers back to their originating FITS files
     wcs_map = {name: hdr for name, hdr in results if hdr}
     for h in headers:
-        if h['ORIGNAME'] in wcs_map:
-            h.update(wcs_map[h['ORIGNAME']])
+        if h['ORIGNAME'].replace('.fits','').replace('.fz','') in wcs_map:
+            h.update(wcs_map[h['ORIGNAME'].replace('.fits','').replace('.fz','')])
         
     return headers
 

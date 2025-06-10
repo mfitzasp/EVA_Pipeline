@@ -35,6 +35,7 @@ from pathlib import Path
 import traceback
 from astropy.io import fits
 from astropy import wcs
+from astropy.io.fits import Header
 import time
 import subprocess
 from astropy.table import Table
@@ -384,8 +385,8 @@ def run_astrometry_net(file, codedir):
         logging.info("A successful solve for " + str(astromfitsfile))
         os.remove(astromfitsfile)
         shutil.move(str(tempdir / 'test.wcs'), dest_wcs)
-        wh = fits.open(dest_wcs)[0].header
-        wcs_header = wcs.WCS(wh).to_header(relax=True)
+        hdr= fits.open(dest_wcs)[0].header
+        wcs_header = wcs.WCS(hdr).to_header(relax=True)
     else:
         # Try once with tweak-order [1]    
         os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order " + str(tweakorder[1]) + " --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
@@ -394,8 +395,8 @@ def run_astrometry_net(file, codedir):
             logging.info("A successful solve for " + str(astromfitsfile))
             os.remove(astromfitsfile)
             shutil.move(str(tempdir / 'test.wcs'), dest_wcs)
-            wh = fits.open(dest_wcs)[0].header
-            wcs_header = wcs.WCS(wh).to_header(relax=True)
+            hdr= fits.open(dest_wcs)[0].header
+            wcs_header = wcs.WCS(hdr).to_header(relax=True)
         else:
             # Try once with tweak-order 4    
             os.system("/usr/local/astrometry/bin/solve-field " + str(tempdir / 'test.fits') + " -D " + str(tempdir) + " --x-column X_IMAGE --y-column Y_IMAGE --sort-column FLUX_AUTO --crpix-center --tweak-order 4 --width " + str(imagew) + " --height " + str(imageh) + " --scale-units arcsecperpix --scale-low " + str(pixlow) + " --scale-high " + str(pixhigh) + " --scale-units arcsecperpix --ra " + str(RAest) + " --dec " + str(DECest) + " --radius 10 --cpulimit 300 --depth 1-100 --overwrite --no-verify --no-plots ")
@@ -404,8 +405,8 @@ def run_astrometry_net(file, codedir):
                 logging.info("A successful solve for " + str(astromfitsfile))
                 os.remove(astromfitsfile)
                 shutil.move(str(tempdir / 'test.wcs'), dest_wcs)
-                wh = fits.open(dest_wcs)[0].header
-                wcs_header = wcs.WCS(wh).to_header(relax=True)
+                hdr= fits.open(dest_wcs)[0].header
+                wcs_header = wcs.WCS(hdr).to_header(relax=True)
             else:
                 logging.info("A failed solve for " + str(astromfitsfile))
                 os.remove(astromfitsfile)                   
