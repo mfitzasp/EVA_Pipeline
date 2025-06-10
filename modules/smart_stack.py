@@ -55,6 +55,12 @@ kernel = Gaussian2DKernel(x_stddev=2,y_stddev=2)
 from astropy.stats import mad_std
 
 
+def load_header(file):
+    """Load a FITS header saved via pickle."""
+    with open(file.replace('.npy', '.head'), 'rb') as fp:
+        return pickle.load(fp)
+
+
 def SNPprocess_files_with_timeouts(file_list, timeout_total=120 , maximum_cpus_ever=8):
     max_workers = max(min(5, os.cpu_count() // 2, maximum_cpus_ever), 1)
     
@@ -76,7 +82,7 @@ def SNPprocess_files_with_timeouts(file_list, timeout_total=120 , maximum_cpus_e
 def saltandpepper_process_file(file):
     try:
         imagedata = np.load(file)
-        newheader = fits.open(file.replace('.npy', '.head'))[0].header
+        newheader = load_header(file)
         _, noise_mask, _ = mitigate_salt_and_pepper_noise(
             imagedata, threshold=12, fwhm=float(newheader['FWHMpix']), pixscale=float(newheader['PIXSCALE'])
         )
@@ -91,8 +97,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     # First detect missing WCS headers... no point including them if they don't have WCS!
     deleteList=[]
     for file in fileList:
-        hdu2test =fits.open(file.replace('.npy','.head'))[0]
-        prihdr=hdu2test.header
+        prihdr = load_header(file)
 
         w = wcs.WCS(prihdr)
         logging.info (file)
@@ -119,8 +124,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     RAcollect=[]
     DECcollect=[]
     for file in fileList:
-        hdu2test =fits.open(file.replace('.npy','.head'))
-        prihdr=hdu2test[0].header
+        prihdr = load_header(file)
         RAcollect.append(float(prihdr['CRVAL1']))
         DECcollect.append(float(prihdr['CRVAL2']))
     RAcollect=np.asarray(RAcollect)
@@ -153,8 +157,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     RAcollect=[]
     DECcollect=[]
     for file in fileList:
-        hdu2test =fits.open(file.replace('.npy','.head'))[0]
-        prihdr=hdu2test.header
+        prihdr = load_header(file)
 
         logging.info ("************")
         logging.info (file)
@@ -220,8 +223,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
         sky_level=[]
         rejected=0
         for file in fileList:
-            hdu2test =fits.open(file.replace('.npy','.head'))[0]
-            prihdr=hdu2test.header
+            prihdr = load_header(file)
             if not prihdr['FWHM'] == 'Unknown':
                 fwhm_list.append(prihdr['FWHM'])
             if not prihdr['SKYLEVEL'] == 'Unknown':        
@@ -237,8 +239,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
         logging.info ("SKYLEVEL: " + str(sky_level_median) + " STD: " + str(sky_level_std))
         
         for file in fileList:
-            hdu2test =fits.open(file.replace('.npy','.head'))[0]
-            prihdr=hdu2test.header
+            prihdr = load_header(file)
             if prihdr['FWHM'] == 'Unknown':
                 rejected=1
                 fileList.remove(file)
@@ -288,7 +289,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
             logging.info (file)
             imagedata= np.load(file)
             image_shape=imagedata.shape
-            newheader =fits.open(file.replace('.npy','.head'))[0].header            
+            newheader = load_header(file)
 
             cleanhdu=fits.PrimaryHDU()
             cleanhdu.data=np.asarray(imagedata)
@@ -371,7 +372,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
 
         if i != 0:
             logging.info (i)
-            sechdr = fits.open(file.replace('.npy','.head'))[0].header
+            sechdr = load_header(file)
             imagedata= np.load(file)
             
             cleanhdu=fits.PrimaryHDU()
