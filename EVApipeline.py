@@ -290,10 +290,13 @@ def pre_astrometry(tdir, headers, cfg, args):
         for f in files:
             fn(f)
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
+
+    # Refresh the file list to pick up the newly created FLATTED files
+    files = [str(p) for p in Path(tdir).glob('FLATTED*.npy')]
     n2 = max(1, min(math.floor(cpu*0.25), len(files)))
 
-    args_list = [(fn, cfg['codedir']) for fn in files]
-    
+    args_list = [(f, cfg['codedir']) for f in files]
+
     with Pool(n2) as p:
         p.starmap(run_astrometry_net, args_list)
         
