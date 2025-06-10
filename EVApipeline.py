@@ -27,8 +27,14 @@ Paper on OSSPipeline: https://rtsre.org/index.php/rtsre/article/view/12/12
 
 
 """
-import argparse
+
 import logging
+
+# silence matplotlib’s debug noise
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
+logging.getLogger("matplotlib.font_manager").setLevel(logging.WARNING)
+
+import argparse
 import os
 import glob
 import math
