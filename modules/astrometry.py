@@ -34,6 +34,7 @@ import os
 from pathlib import Path
 import traceback
 from astropy.io import fits
+from astropy import wcs
 import time
 import subprocess
 from astropy.table import Table
