@@ -254,9 +254,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     
     logging.info (fwhm_list)
     logging.info (sky_level)
-    
-    del hdu2test
-        
+            
     try:
         do_salt_and_pepper=prihdr['DOSNP']
     except:
