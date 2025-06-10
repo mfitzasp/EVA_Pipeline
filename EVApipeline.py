@@ -417,10 +417,10 @@ def construct_images(headers, human_names, cfg, args, base):
         subdir.mkdir(parents=True, exist_ok=True)
         dest = subdir / npy_name
         shutil.move(str(src), str(dest))
-        # write header placeholder
-        cleanhdu = fits.PrimaryHDU(data=np.asarray([0]), header=h)
+        # write header placeholder without mutating WCS information
         headfile = subdir / npy_name.replace('.npy', '.head')
-        cleanhdu.writeto(str(headfile), output_verify='silentfix', overwrite=True)
+        with open(headfile, 'wb') as fp:
+            pickle.dump(h, fp)
 
     # Now run smart_stack on each sub-directory
     for sub in sstacks_dir.iterdir():
