@@ -40,11 +40,11 @@ def run_source_extractor(file, codedir):
     saturlevel=prihdr['SATURATE']
     gain=prihdr['GAIN']
     try:
-        seeingfwhm=float(prihdr['FWHMASEC'])
+        seeingfwhm = float(prihdr.get('FWHMasec', prihdr.get('FWHMASEC', 2.5)))
         if seeingfwhm < 1:
-           seeingfwhm=2.5
-    except:
-        seeingfwhm=2.5
+            seeingfwhm = 2.5
+    except Exception:
+        seeingfwhm = 2.5
     photapertures=max(5.0/float(prihdr['PIXSCALE']),3)
 
     tempdir=file.replace('.','d')
@@ -134,11 +134,11 @@ def run_pre_psfex(file, codedir):
     saturlevel=prihdr['SATURATE']
     gain=prihdr['GAIN']
     try:
-        seeingfwhm=float(prihdr['FWHMASEC'])
+        seeingfwhm = float(prihdr.get('FWHMasec', prihdr.get('FWHMASEC', 2.5)))
         if seeingfwhm < 1:
-           seeingfwhm=2.5
-    except:
-        seeingfwhm=2.5
+            seeingfwhm = 2.5
+    except Exception:
+        seeingfwhm = 2.5
     photapertures=max(5.0/float(prihdr['PIXSCALE']),3)
     tempdir=file.replace('.','d')
     
@@ -162,11 +162,11 @@ def run_actual_psfex(file, codedir):
     photapertures=max(3.0/float(prihdr['PIXSCALE']),3)
     
     try:
-        seeingfwhm=float(prihdr['FWHMASEC'])
+        seeingfwhm = float(prihdr.get('FWHMasec', prihdr.get('FWHMASEC', 2.5)))
         if seeingfwhm < 1:
-           seeingfwhm=2.5
-    except:
-        seeingfwhm=2.5
+            seeingfwhm = 2.5
+    except Exception:
+        seeingfwhm = 2.5
     
     # Calculate broadly minimum area from the seeing and the pixelscale
     fwhmpixels= seeingfwhm / float(prihdr['PIXSCALE'])
