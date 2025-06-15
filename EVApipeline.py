@@ -82,6 +82,7 @@ from modules.final_image import (
     multiprocess_final_image_construction_single_image,
     multiprocess_preview_images
 )
+from functools import partial
 from modules.smart_stack import smart_stack
 from modules.photometry import run_source_extractor, run_pre_psfex, run_actual_psfex
 
@@ -256,14 +257,17 @@ def check_and_deflate(files, cfg, args, base):
     logging.info('Checking files')
     # Get the subprocess script into the directory
     shutil.copy(os.path.expanduser(cfg['codedir']) + '/subprocesses/filechecker.py', Path(base) / 'filechecker.py')
+    script_path = str(Path(base) / 'filechecker.py')
     wait_for_resources()
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
     if cfg['multiprocess']['file_checking']:
         with Pool(n) as p:
-            res = p.map(check_that_file_opens, files)
+            fn = partial(check_that_file_opens, script_path=script_path, python_command=cfg['python_command'])
+            res = p.map(fn, files)
     else:
-        res = [check_that_file_opens(f) for f in files]
+        fn = partial(check_that_file_opens, script_path=script_path, python_command=cfg['python_command'])
+        res = [fn(f) for f in files]
     val = [(r.split()[-1], args.mode) for r in res if r and 'failed' not in r]
     fps, mods = zip(*val) if val else ([], [])
     headers = []
