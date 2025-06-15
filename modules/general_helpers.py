@@ -380,12 +380,17 @@ def wait_for_diskspace(directory="/", threshold=0.75, interval=5, timeout=3 * 60
         
         time.sleep(interval)
 
-def check_that_file_opens(file, python_command='/usr/bin/python3'):
+def check_that_file_opens(file, script_path='filechecker.py', python_command='/usr/bin/python3'):
     """
-    Checks whether a given file can be safely opened by invoking an external script (`filechecker.py`).
+    Checks whether a given file can be safely opened by invoking an external script.
 
     Parameters:
-        file (str): The path to the file that needs to be checked.
+        file (str):
+            The path to the file that needs to be checked.
+        script_path (str, optional):
+            Path to the ``filechecker.py`` script. Defaults to ``'filechecker.py'``.
+        python_command (str, optional):
+            Python executable used to run the script. Defaults to ``'/usr/bin/python3'``.
 
     Returns:
         str: 
@@ -401,7 +406,7 @@ def check_that_file_opens(file, python_command='/usr/bin/python3'):
                                       Prints an error message and attempts to delete the problematic file.
     """
     try:
-        output=subprocess.check_output([python_command,'filechecker.py', file], text=True)
+        output = subprocess.check_output([python_command, script_path, file], text=True)
         if 'safely opened' in output:
             logging.info (output)
             return output
