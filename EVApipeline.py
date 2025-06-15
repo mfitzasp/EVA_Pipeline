@@ -154,7 +154,7 @@ def prepare_local_output_dirs(files, cfg):
             (base / sub).mkdir(parents=True, exist_ok=True)
 
 
-def download_phase(cfg, args):
+def download_phase(cfg, args, base):
     if args.mode != 'online': return
     session = requests.Session()
     retry = Retry(connect=5, backoff_factor=2.0, allowed_methods=frozenset(['GET','POST']))
@@ -188,6 +188,8 @@ def download_phase(cfg, args):
             except:
                 break
         for fr in frames:
+            # Save each downloaded file inside the working directory
+            fr['filename'] = str(Path(base) / Path(fr['filename']).name)
             queue_dl.put(fr)
     wait_for_diskspace(cfg['working_directory'], 0.9)
     def dl(item): return archive_downloader(item, session)
@@ -529,7 +531,7 @@ def main():
     setup_logging()
     cfg = init_config(args)
     base = prepare_dirs(cfg, args)
-    download_phase(cfg, args)
+    download_phase(cfg, args, base)
     files = collect_files(cfg, args, base)
     if not files:
         logging.info('No files found to process. Exiting early.')
