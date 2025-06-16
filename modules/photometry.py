@@ -33,6 +33,7 @@ import subprocess
 import math
 import shutil
 import copy
+from pathlib import Path
 
 def run_source_extractor(file, codedir):
 
@@ -151,7 +152,16 @@ def run_pre_psfex(file, codedir):
     tempprocess=subprocess.Popen(['source-extractor' , file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(saturlevel) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
 
-    tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.psfex')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    # psfex expects its configuration file to be in the directory in which it is
+    # executed.  Copy the default configuration to the working directory and use
+    # that copy for the subprocess call.
+    try:
+        shutil.copy(os.path.expanduser(codedir) + '/photometryparams/default.psfex',
+                    Path(tempdir) / 'default.psfex')
+    except Exception:
+        pass
+
+    tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir),'-PARAMETERS_NAME',  str(Path(tempdir)/'default.psfex')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
 
 def run_actual_psfex(file, codedir):
