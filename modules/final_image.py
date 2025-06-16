@@ -245,7 +245,7 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
             with open(str(temp_banzai_photometry_filename.replace('photometry', 'fullphotcatalogues').replace('.psx','.fullpsx').replace('.sek','.fullsek')), 'r') as f:
 
                 for line in f:
-                    if not '#' in line:
+                    if '#' not in line:
                         # Remove spaces from line
                         line=line.split(' ')
                         list_line=[]
@@ -316,7 +316,7 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
             with open(str(temp_banzai_photometry_filename), 'r') as f:
 
                 for line in f:
-                    if not '#' in line:
+                    if '#' not in line:
 
                         # Remove spaces from line
                         line=line.split(' ')
