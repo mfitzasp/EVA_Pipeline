@@ -34,6 +34,7 @@ from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
 import sep
 import copy
 import os
+from pathlib import Path
 from modules.image_functions import calculate_image_fwhm, mid_stretch_jpeg
 import numpy as np
 from PIL import Image
@@ -46,7 +47,7 @@ import logging
 kernel = Gaussian2DKernel(x_stddev=2,y_stddev=2)
 
 
-def multiprocess_final_image_construction_smartstack(file):
+def multiprocess_final_image_construction_smartstack(file, base):
 
     tempheader=fits.open(file)[0]
     imagedata=tempheader.data
@@ -76,7 +77,7 @@ def multiprocess_final_image_construction_smartstack(file):
 
     tempheader['RLEVEL']=96
 
-    filenameonly=file.replace('sstacksdirectory/','')
+    filenameonly = Path(file).name
     tempheader['SJPGNAME']= filenameonly.replace('.fits','.jpg').replace('EVA-','smalljpg-').replace('SmSTACK-','smalljpgSmSTACK-')
     tempheader['LJPGNAME']= filenameonly.replace('.fits','.jpg').replace('EVA-','previewjpg-').replace('SmSTACK-','previewjpgSmSTACK-')
     tempheader['TJPGNAME']=filenameonly.replace('.fits','.jpg').replace('EVA-','thumbnail-').replace('SmSTACK-','thumbnailSmSTACK-')
@@ -85,13 +86,15 @@ def multiprocess_final_image_construction_smartstack(file):
     tempheader['SEANAME']=filenameonly.replace('.fits','.sea').replace('EVA-','seaphot-').replace('SmSTACK-','seaphotSmSTACK-')
     tempheader['SEKNAME']=filenameonly.replace('.fits','.sek').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-')
 
-    fits.writeto('outputdirectory/' + file.replace('sstacksdirectory/','') ,imagedata, tempheader, output_verify='silentfix', overwrite=True)
+    dest = Path(base) / 'outputdirectory' / filenameonly
+    fits.writeto(dest, imagedata, tempheader, output_verify='silentfix', overwrite=True)
 
     os.remove(file)
 
-def multiprocess_final_image_construction_single_image(file,tempheader,humanreadablename):
+def multiprocess_final_image_construction_single_image(file, tempheader, humanreadablename, base):
 
-    imagedata=np.load('workingdirectory/' +file)
+    path = Path(base) / 'workingdirectory' / file
+    imagedata=np.load(path)
 
     # For each image, simply crop 20 pixels around the edge
     # crop image
@@ -127,7 +130,8 @@ def multiprocess_final_image_construction_single_image(file,tempheader,humanread
     tempheader['SEKNAME']=filenameonly.replace('.fits','.sek').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-')
 
     logging.info ("Interpolated and saved file: " + str(humanreadablename))
-    fits.writeto('outputdirectory/' + humanreadablename, imagedata, tempheader, overwrite=True)
+    dest = Path(base) / 'outputdirectory' / humanreadablename
+    fits.writeto(dest, imagedata, tempheader, overwrite=True)
 
     del imagedata
 

@@ -30,10 +30,12 @@ Paper on OSSPipeline: https://rtsre.org/index.php/rtsre/article/view/12/12
 
 import numpy as np
 import logging
+from pathlib import Path
 
-def crop_images_for_wcs_flatness(file):
+def crop_images_for_wcs_flatness(file, base):
 
-    imagedata=np.load('workingdirectory/' +file)
+    path = Path(base) / 'workingdirectory' / file
+    imagedata=np.load(path)
 
     # We are actually going to crop the image
     # So we need to adjust the size here also.
@@ -44,15 +46,15 @@ def crop_images_for_wcs_flatness(file):
 
     imagedata = imagedata[cropvalue_w:-cropvalue_w,cropvalue_h:-cropvalue_h]
 
-    np.save('workingdirectory/' +file, imagedata)
+    np.save(path, imagedata)
     return cropvalue_h,cropvalue_w
 
 ##### Crop single images to get rid of regions with probably dodgy wcs values
 ##### For both individual images, but also so strange stretches don't emerge in stacks
 
-def multiprocess_crop_images_for_flatness(header):
+def multiprocess_crop_images_for_flatness(header, base):
 
-    cropvalue_h,cropvalue_w=crop_images_for_wcs_flatness(header['ORIGNAME'].replace('.fits.fz','.npy').replace('.fits','.npy'))
+    cropvalue_h,cropvalue_w=crop_images_for_wcs_flatness(header['ORIGNAME'].replace('.fits.fz','.npy').replace('.fits','.npy'), base)
 
     if any("CRPIX1" in s for s in header.keys()):
         header['CRPIX1']=header['CRPIX1']-cropvalue_h

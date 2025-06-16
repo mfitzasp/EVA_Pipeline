@@ -389,7 +389,7 @@ def make_dirs_output(base):
               "photometry", "fullphotcatalogues"]:
         Path(base, d).mkdir(exist_ok=True)
 
-def enrich_build(headers, cfg, args):
+def enrich_build(headers, cfg, args, base):
     logging.info('Value-add to headers and naming')
     human_names = []
     for i, h in enumerate(headers):
@@ -402,14 +402,15 @@ def enrich_build(headers, cfg, args):
     wait_for_resources()
     logging.info('Cropping for flatness')
     with Pool() as p:
-        headers = p.map(multiprocess_crop_images_for_flatness, headers)
+        tasks = [(h, base) for h in headers]
+        headers = p.starmap(multiprocess_crop_images_for_flatness, tasks)
     return headers, human_names
 
 def construct_images(headers, human_names, cfg, args, base):
     logging.info('Constructing images')
     wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
     cpu = os.cpu_count() or 1
-    tasks = [(h['ORIGNAME'].replace('.fits.fz','.npy').replace('.fits','.npy'), h, nm)
+    tasks = [(h['ORIGNAME'].replace('.fits.fz','.npy').replace('.fits','.npy'), h, nm, base)
              for h, nm in zip(headers, human_names)]
     n = max(1, min(math.floor(cpu*0.25), len(tasks)))
     with Pool(n) as p:
@@ -418,8 +419,8 @@ def construct_images(headers, human_names, cfg, args, base):
     # Prepare smartstack files
     # Remove entries with SMARTSTK=='no' and move .npy accordingly
     # workingdirectory holds the npy outputs
-    working_dir = Path('workingdirectory')
-    sstacks_dir = Path('sstacksdirectory')
+    working_dir = Path(base) / 'workingdirectory'
+    sstacks_dir = Path(base) / 'sstacksdirectory'
     sstacks_dir.mkdir(exist_ok=True)
 
     valid_headers = []
@@ -459,15 +460,16 @@ def construct_images(headers, human_names, cfg, args, base):
 
     wait_for_resources()
     # Final smart-stack image construction
-    fits_ss = glob.glob('sstacksdirectory/*.fits')
+    fits_ss = glob.glob(str(Path(base) / 'sstacksdirectory' / '*.fits'))
     
     n2 = max(1, min(math.floor(cpu*0.25), len(fits_ss)))
     with Pool(n2) as p:
-        p.map(multiprocess_final_image_construction_smartstack, fits_ss)
+        tasks = [(f, base) for f in fits_ss]
+        p.starmap(multiprocess_final_image_construction_smartstack, tasks)
 
     # Previews
     wait_for_resources()
-    previews = glob.glob('outputdirectory/*.fits')
+    previews = glob.glob(str(Path(base) / 'outputdirectory' / '*.fits'))
     # don't make preview jpgs of variance frames
     previews = [f for f in previews if not os.path.basename(f).startswith('variance_')]
     try:
@@ -552,7 +554,7 @@ def main():
     headers = header_merge(headers, base)
     cleanup_intermediate(base)
     make_dirs_output(base)
-    headers, human_names = enrich_build(headers, cfg, args)
+    headers, human_names = enrich_build(headers, cfg, args, base)
     wait_for_resources()
     construct_images(headers, human_names, cfg, args, base)
     wait_for_resources()
