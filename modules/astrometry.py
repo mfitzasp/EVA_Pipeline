@@ -269,7 +269,15 @@ def run_astrometry_net(file, codedir):
         tempprocess=subprocess.Popen(['source-extractor' , astromfitsfile ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull', '-PARAMETERS_NAME', str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx'), '-CATALOG_NAME',str(tempdir / 'psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(image_saturation_level) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
         
-        tempprocess=subprocess.Popen(['psfex', str(tempdir / 'psf.cat'), '-c',os.path.expanduser(codedir) +'/photometryparams/default.psfex','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+        # psfex requires the configuration file to be present in the working
+        # directory.  Copy it before running psfex and use the local path.
+        try:
+            shutil.copy(os.path.expanduser(codedir) + '/photometryparams/default.psfex',
+                        tempdir / 'default.psfex')
+        except Exception:
+            pass
+
+        tempprocess=subprocess.Popen(['psfex', str(tempdir / 'psf.cat'), '-c',str(tempdir / 'default.psfex'),'-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
         tempprocess.wait()
         
         photapertures=max(3.0/float(pixscale),3)
