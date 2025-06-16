@@ -169,16 +169,36 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
 
             if local_copy:
                 shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/pngs/' + tempfilename.split('/')[-1].replace('.png',seq_number+'.png'))
-            
+
             headerdict['RLEVEL'] = 75
             try:
-                shutil.copy(tempfilename, relevant_archive_folder)        
+                shutil.copy(tempfilename, relevant_archive_folder)
                 landing_filename=relevant_archive_folder +'/' + tempfilename.split('/')[-1]
                 with open(landing_filename+'.tempjson','w') as tempfile:
                     json.dump(headerdict, tempfile, indent=4)
                 os.rename (landing_filename+'.tempjson', landing_filename+'.json')
             except:
-                logging.info(traceback.format_exc())       
+                logging.info(traceback.format_exc())
+
+        # Upload large preview jpeg
+        tempfilename = file.replace('outputdirectory', 'previews').replace('.fits', '.jpg').replace('EVA-',
+                         'previewjpg-').replace(
+            'SmSTACK-', 'previewjpgSmSTACK-').replace('LoSTACK-', 'previewjpgLoSTACK-')
+
+        if os.path.exists(tempfilename):
+
+            if local_copy:
+                shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/previews/' + tempfilename.split('/')[-1].replace('.jpg',seq_number+'.jpg'))
+
+            headerdict['RLEVEL'] = 76
+            try:
+                shutil.copy(tempfilename, relevant_archive_folder)
+                landing_filename=relevant_archive_folder +'/' + tempfilename.split('/')[-1]
+                with open(landing_filename+'.tempjson','w') as tempfile:
+                    json.dump(headerdict, tempfile, indent=4)
+                os.rename (landing_filename+'.tempjson', landing_filename+'.json')
+            except:
+                logging.info(traceback.format_exc())
     
         # Upload small jpeg
         tempfilename = file.replace('outputdirectory', 'smalljpgs').replace('.fits', '.jpg').replace('EVA-',
