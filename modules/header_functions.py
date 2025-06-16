@@ -189,6 +189,10 @@ def value_add_header(header, telescope):
            
     if not any("ORIGIN" in s for s in header.keys()):
         header['ORIGIN'] = 'Unknown'
+
+    # When the data comes from LCOGT, standardise the observation ID early
+    if header.get('ORIGIN', '').lower() == 'lcogt':
+        header['OBSID'] = 'LCO'
     
     if not any("HEIGHT" in s for s in header.keys()):
         if any("ALT-OBS" in s for s in header.keys()):
