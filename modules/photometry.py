@@ -148,9 +148,24 @@ def run_pre_psfex(file, codedir):
     psfarea= math.pi * pow((fwhmpixels /2),2)
     minarea= 1.0 * psfarea    
     backsize= 4 * fwhmpixels
+    
+    # source-extractor expects its param file to be in the directory
+    try:
+        shutil.copy(os.path.expanduser(codedir) + '/photometryparams/default.paramprepsx',
+                    Path(tempdir) / 'default.param')
+    except Exception:
+        pass
+    
+    #,'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx')]
 
-    tempprocess=subprocess.Popen(['source-extractor' , file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(saturlevel) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    #tempprocess=subprocess.Popen(['source-extractor' , file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(saturlevel) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramprepsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    tempprocess=subprocess.Popen(['source-extractor' , file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','FITS_LDAC','-SATUR_LEVEL', str(saturlevel) , '-DETECT_THRESH', str(2.5), '-ANALYSIS_THRESH',str(2.5),'-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_MINAREA', str(minarea), '-GAIN',str(gain),'-SEEING_FWHM',str(seeingfwhm),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
+    
+    try:
+        os.remove(Path(tempdir) / 'default.param')
+    except:
+        pass
 
     # psfex expects its configuration file to be in the directory in which it is
     # executed.  Copy the default configuration to the working directory and use
@@ -161,7 +176,8 @@ def run_pre_psfex(file, codedir):
     except Exception:
         pass
 
-    tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir),'-PARAMETERS_NAME',  str(Path(tempdir)/'default.psfex')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    #tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir),'-PARAMETERS_NAME',  str(Path(tempdir)/'default.psfex')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    tempprocess=subprocess.Popen(['psfex', str(tempdir)+'/psf.cat','-CHECKPLOT_DEV','NULL','-CHECKIMAGE_TYPE','NONE','-PSF_DIR',str(tempdir)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
 
 def run_actual_psfex(file, codedir):
@@ -186,7 +202,17 @@ def run_actual_psfex(file, codedir):
     
     tempdir=file.replace('.','d')
     
-    tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(3), '-ANALYSIS_THRESH',str(3), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(saturlevel) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    # source-extractor expects its param file to be in the directory
+    try:
+        shutil.copy(os.path.expanduser(codedir) + '/photometryparams/default.paramactualpsx',
+                    Path(tempdir) / 'default.param')
+    except Exception:
+        pass
+    
+    #,'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx')
+    
+    #tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(3), '-ANALYSIS_THRESH',str(3), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(saturlevel) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv'),'-PARAMETERS_NAME',  str(os.path.expanduser(codedir) +'/photometryparams/default.paramactualpsx')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
+    tempprocess=subprocess.Popen(['source-extractor','-PSF_NAME',str(tempdir)+'/psf.psf', file ,'-c',os.path.expanduser(codedir) +'/photometryparams/default.sexfull','-CATALOG_NAME',str(tempdir+'/psf.cat'),'-CATALOG_TYPE','ASCII', '-BACKPHOTO_TYPE','LOCAL', '-BACK_SIZE', str(backsize), '-BACK_FILTERSIZE',str(4), '-DETECT_THRESH', str(3), '-ANALYSIS_THRESH',str(3), '-DETECT_MINAREA', str(minarea),'-SATUR_LEVEL', str(saturlevel) ,'-GAIN',str(gain),'-PHOT_APERTURES', str(photapertures),'-FILTER_NAME', str(os.path.expanduser(codedir) +'/photometryparams/sourceex_convs/gauss_2.0_5x5.conv')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,bufsize=0)
     tempprocess.wait()
     
     
