@@ -36,6 +36,7 @@ import bottleneck as bn
 import math
 import os
 from multiprocessing.pool import Pool
+from pathlib import Path
 import astropy.units as u
 from reproject.mosaicking import find_optimal_celestial_wcs
 import psutil
@@ -928,8 +929,11 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     logging.info (newName.replace(' ','').replace('_NP_NP_','_'))
     # Report number of nans in array
     logging.info ("Number of nan pixels in image array: " + str(np.count_nonzero(np.isnan(finalImage))))
-    fits.writeto("sstacksdirectory/" + newName.replace(' ','').replace('_NP_NP_','_'), (np.asarray(finalImage).astype(np.float32)), newheader, output_verify='silentfix')
-    fits.writeto("sstacksdirectory/" + 'variance_'+newName.replace(' ','').replace('_NP_NP_','_'), (np.asarray(variance_finalImage).astype(np.float32)), newheader, output_verify='silentfix')
+    base = Path(basedirectory)
+    dest = base / 'sstacksdirectory' / newName.replace(' ','').replace('_NP_NP_','_')
+    fits.writeto(dest, (np.asarray(finalImage).astype(np.float32)), newheader, output_verify='silentfix')
+    var_dest = base / 'sstacksdirectory' / ('variance_' + newName.replace(' ','').replace('_NP_NP_','_'))
+    fits.writeto(var_dest, (np.asarray(variance_finalImage).astype(np.float32)), newheader, output_verify='silentfix')
     
     del finalImage
     del variance_finalImage
