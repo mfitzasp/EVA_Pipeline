@@ -241,26 +241,30 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         # if it is less than 10, it is sorta a problem
         # also psfex still reports even if the PSF did not fit well, so shoots out zero fluxes
         source_counter=0
-        with open(str(temp_banzai_photometry_filename.replace('photometry', 'fullphotcatalogues').replace('.psx','.fullpsx').replace('.sek','.fullsek')), 'r') as f:
+        try:
+            with open(str(temp_banzai_photometry_filename.replace('photometry', 'fullphotcatalogues').replace('.psx','.fullpsx').replace('.sek','.fullsek')), 'r') as f:
 
-            for line in f:
-                if not '#' in line:
-                    # Remove spaces from line
-                    line=line.split(' ')
-                    list_line=[]
-                    for entry in line:
-                        entry=entry.replace('\n','')
-                        if entry == '':
-                            pass
-                        else:
-                            list_line.append(float(entry))
-                    line=list_line
+                for line in f:
+                    if not '#' in line:
+                        # Remove spaces from line
+                        line=line.split(' ')
+                        list_line=[]
+                        for entry in line:
+                            entry=entry.replace('\n','')
+                            if entry == '':
+                                pass
+                            else:
+                                list_line.append(float(entry))
+                        line=list_line
 
-                    if float(line[5]) > 0:
-                        source_counter=source_counter+1
-        logging.info ("psx source counts: " + str(source_counter))
-        if source_counter > 0:
-            psxfile=True
+                        if float(line[5]) > 0:
+                            source_counter=source_counter+1
+            logging.info ("psx source counts: " + str(source_counter))
+            if source_counter > 0:
+                psxfile=True
+        except UnicodeDecodeError as e:
+            logging.error(f"Could not read photometry catalogue {temp_banzai_photometry_filename}: {e}")
+            return
 
     if not psxfile:
         # If no psx photometry - potentially due to lack of sources, then check for sek
@@ -308,21 +312,22 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         else:
             logging.info ("sekfile")
         # set up the list of sources
-        with open(str(temp_banzai_photometry_filename), 'r') as f:
+        try:
+            with open(str(temp_banzai_photometry_filename), 'r') as f:
 
-            for line in f:
-                if not '#' in line:
+                for line in f:
+                    if not '#' in line:
 
-                    # Remove spaces from line
-                    line=line.split(' ')
-                    list_line=[]
-                    for entry in line:
-                        entry=entry.replace('\n','')
-                        if entry == '':
-                            pass
-                        else:
-                            list_line.append(float(entry))
-                    line=list_line
+                        # Remove spaces from line
+                        line=line.split(' ')
+                        list_line=[]
+                        for entry in line:
+                            entry=entry.replace('\n','')
+                            if entry == '':
+                                pass
+                            else:
+                                list_line.append(float(entry))
+                        line=list_line
 
                     if psxfile and (float(line[5]) > 0): # PSX can sometime present zero values
                         ra.append(float(line[1]))
@@ -394,6 +399,9 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
                     # for r in [0.25, 0.5, 0.75]:
                     #     sources['fluxrad' + f'{r:.2f}'.lstrip("0.")] = catalog.fluxfrac_radius(r)
 
+        except UnicodeDecodeError as e:
+            logging.error(f"Could not read photometry file {temp_banzai_photometry_filename}: {e}")
+            return
 
         # Create empty astropy table intended to create BANZAI catalogue
         sources = Table({'ra': ra, 'dec': dec, 'x': xcentroid, 'y': ycentroid,
