@@ -1259,7 +1259,7 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
         standin_err_array.header['EXTNAME'] = 'ERR'
         bzesque_file.append(standin_err_array)
 
-        output_bzesk_filename=file.replace('EVA','BZESK').replace('SmSTACK','BZESKSmSTACK').replace('.fits','.fits.fz')
+        output_bzesk_filename=file.replace('EVA-','BZESK-').replace('SmSTACK-','BZESKSmSTACK-').replace('.fits','.fits.fz')
         try:
             bzesque_file.writeto(output_bzesk_filename, overwrite=True)
         except:
