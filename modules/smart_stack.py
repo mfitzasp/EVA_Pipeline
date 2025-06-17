@@ -36,6 +36,7 @@ import bottleneck as bn
 import math
 import os
 from multiprocessing.pool import Pool
+from multiprocessing import TimeoutError as MPTimeoutError
 from pathlib import Path
 import astropy.units as u
 from reproject.mosaicking import find_optimal_celestial_wcs
@@ -71,7 +72,7 @@ def SNPprocess_files_with_timeouts(file_list, timeout_total=120 , maximum_cpus_e
         try:
             # wait up to `timeout_total` seconds for *all* files
             results = async_map.get(timeout=timeout_total)
-        except TimeoutError:
+        except (MPTimeoutError, TimeoutError):
             logging.info("Salt and Pepper Batch processing timed out; terminating pool.")
             pool.terminate()  # kills all workers immediately
             pool.join()
