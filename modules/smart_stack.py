@@ -934,7 +934,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     dest = base / 'sstacksdirectory' / newName.replace(' ','').replace('_NP_NP_','_')
     fits.writeto(dest, (np.asarray(finalImage).astype(np.float32)), newheader, output_verify='silentfix')
     var_dest = base / 'sstacksdirectory' / ('variance_' + newName.replace(' ','').replace('_NP_NP_','_'))
-    fits.writeto(var_dest, (np.asarray(variance_finalImage).astype(np.float32)), newheader, output_verify='silentfix')
+    fits.writeto(var_dest, (np.asarray(variance_finalImage).astype(np.float32)), newheader, output_verify='silentfix', overwrite=True)
     
     del finalImage
     del variance_finalImage
