@@ -39,6 +39,7 @@ from astropy.io.fits import Header
 import time
 import subprocess
 from astropy.table import Table
+from astropy.io.ascii import InconsistentTableError
 import math
 from modules.platesolving import get_source_spread_through_catalogue
 from astropy.stats import sigma_clip
@@ -250,7 +251,16 @@ def run_astrometry_net(file, codedir):
     tempprocess.wait() 
         
     # Read the ASCII catalog
-    acatalog = Table.read(tempdir / "test.cat", format='ascii')
+    try:
+        acatalog = Table.read(tempdir / "test.cat", format='ascii')
+    except InconsistentTableError:
+        logging.info("Failed to read catalog %s", str(tempdir / "test.cat"))
+        logging.info(traceback.format_exc())
+        return orig_name, None
+    except Exception:
+        logging.info(traceback.format_exc())
+        return orig_name, None
+
     # Reject poor  ( <10 SNR) sources
     acatalog=acatalog[acatalog['FLUX_AUTO']/acatalog['FLUXERR_AUTO'] > 10]
 
@@ -286,7 +296,15 @@ def run_astrometry_net(file, codedir):
         tempprocess.wait()
 
         # pick up the catalog again and trim it up
-        acatalog = Table.read(tempdir / "psf.cat", format='ascii')
+        try:
+            acatalog = Table.read(tempdir / "psf.cat", format='ascii')
+        except InconsistentTableError:
+            logging.info("Failed to read catalog %s", str(tempdir / "psf.cat"))
+            logging.info(traceback.format_exc())
+            return orig_name, None
+        except Exception:
+            logging.info(traceback.format_exc())
+            return orig_name, None
         
         # Remove index, RA and DEC columns
         acatalog.remove_columns(acatalog.colnames[:3])
