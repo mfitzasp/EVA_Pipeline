@@ -932,7 +932,7 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
     logging.info ("Number of nan pixels in image array: " + str(np.count_nonzero(np.isnan(finalImage))))
     base = Path(basedirectory)
     dest = base / 'sstacksdirectory' / newName.replace(' ','').replace('_NP_NP_','_')
-    fits.writeto(dest, (np.asarray(finalImage).astype(np.float32)), newheader, output_verify='silentfix')
+    fits.writeto(dest, (np.asarray(finalImage).astype(np.float32)), newheader, output_verify='silentfix', overwrite=True)
     var_dest = base / 'sstacksdirectory' / ('variance_' + newName.replace(' ','').replace('_NP_NP_','_'))
     fits.writeto(var_dest, (np.asarray(variance_finalImage).astype(np.float32)), newheader, output_verify='silentfix', overwrite=True)
     
