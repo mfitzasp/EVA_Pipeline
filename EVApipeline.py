@@ -71,7 +71,8 @@ from modules.general_helpers import (
     wait_for_diskspace,
     load_config,
     archive_downloader, de_fz_file,
-    wait_for_file
+    wait_for_file,
+    token_is_older_than
 )
 from modules.platesolving import multiprocess_crop_images_for_flatness
 from modules.archive import archive_preparer
@@ -218,7 +219,14 @@ def collect_files(cfg, args, base):
             alt=Path(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f.replace('.fits.fz','.fits'))
 
             if not p.exists() and not alt.exists():
-                wait_for_file(p)
+                if not wait_for_file(p):
+                    remove_token = token_is_older_than(Path(base).name)
+                    cleanup_and_exit(
+                        os.path.expanduser('~'),
+                        base,
+                        remove_token=remove_token
+                    )
+                    return []
 
             if p.suffixes[-2:] == ['.fits','.fz']:
                 # Sometimes, particularly if this is run twice or more

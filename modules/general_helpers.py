@@ -31,7 +31,8 @@ import random
 import time
 import psutil
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
+import re
 import os
 from pathlib import Path
 import shutil
@@ -402,6 +403,20 @@ def wait_for_file(filepath, timeout=6 * 60 * 60, interval=60):
         time.sleep(interval)
 
     return True
+
+def token_is_older_than(token_name, days=30):
+    """Return ``True`` if the date embedded in ``token_name`` is older than ``days``."""
+
+    m = re.search(r"(\d{8})", token_name)
+    if not m:
+        return False
+
+    try:
+        tdate = datetime.strptime(m.group(1), "%Y%m%d").date()
+    except ValueError:
+        return False
+
+    return (datetime.utcnow().date() - tdate) > timedelta(days=days)
 
 def wait_for_diskspace(directory="/", threshold=0.75, interval=5, timeout=3 * 60 * 60):
     """
