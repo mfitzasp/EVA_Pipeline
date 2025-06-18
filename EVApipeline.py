@@ -461,6 +461,8 @@ def construct_images(headers, human_names, cfg, args, base):
     wait_for_resources()
     # Final smart-stack image construction
     fits_ss = glob.glob(str(Path(base) / 'sstacksdirectory' / '*.fits'))
+    # remove variance frames from final image construction entirely
+    fits_ss = [f for f in fits_ss if not os.path.basename(f).startswith('variance_')]
     
     n2 = max(1, min(math.floor(cpu*0.25), len(fits_ss)))
     with Pool(n2) as p:

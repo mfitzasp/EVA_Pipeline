@@ -55,18 +55,19 @@ def multiprocess_final_image_construction_smartstack(file, base):
     
     imagedata=interpolate_replace_nans(imagedata,kernel)
 
-    # Calculate Image FWHM
-    sepimg=copy.deepcopy(imagedata).byteswap().newbyteorder()
-    try:
-        bkg = sep.Background(sepimg, bw=32, bh=32, fw=3, fh=3)
-        bkg.subfrom(sepimg)
-    except:
-        logging.info ("Failed background (usually flat) for image: " + str(file))
-        
-    try:
-        tempheader=calculate_image_fwhm(sepimg, tempheader)
-    except:
-        logging.info ("Failed FWHM (usually blank) for image: " + str(file))
+    # Calculate Image FWHM unless this is a variance frame
+    if not Path(file).name.startswith('variance_'):
+        sepimg=copy.deepcopy(imagedata).byteswap().newbyteorder()
+        try:
+            bkg = sep.Background(sepimg, bw=32, bh=32, fw=3, fh=3)
+            bkg.subfrom(sepimg)
+        except Exception:
+            logging.info("Failed background (usually flat) for image: %s", file)
+
+        try:
+            tempheader = calculate_image_fwhm(sepimg, tempheader)
+        except Exception:
+            logging.info("Failed FWHM (usually blank) for image: %s", file)
 
     # Offset bias pedestal
     imagedata = imagedata + 200
