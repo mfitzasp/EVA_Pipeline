@@ -103,7 +103,6 @@ def parse_args():
     p.add_argument('filters')
     p.add_argument('osc')
     p.add_argument('pipeid')
-    p.add_argument('--tokenfile', default=None, help='Path to the token file')
     return p.parse_args()
 
 def setup_logging():
@@ -144,6 +143,18 @@ def prepare_dirs(cfg, args):
     # pipeline working
     Path(cfg['working_directory']) / 'PipelineWorking' / args.telescope
     return base
+
+
+def get_tokenfile_from_info(base):
+    """Return the token file path described in ``info_for_eva.json`` if present."""
+    info_path = Path(base) / 'info_for_eva.json'
+    if info_path.exists():
+        try:
+            info = json.load(open(info_path))
+            return info.get('tokenfile') or info.get('token_file')
+        except Exception:
+            pass
+    return None
 
 
 def prepare_local_output_dirs(files, cfg):
@@ -217,7 +228,7 @@ def download_phase(cfg, args, base):
             queue_dl.task_done()
 
 
-def collect_files(cfg, args, base):
+def collect_files(cfg, args, base, tokenfile=None):
     if args.rundate == 'localfolder':
         return [str(p) for p in Path(base).glob('*.fit*')]
     if args.mode == 'generic':
@@ -233,12 +244,12 @@ def collect_files(cfg, args, base):
             if not p.exists() and not alt.exists():
                 if not wait_for_file(p):
                     remove_token = token_is_older_than(Path(base).name)
-                    if remove_token and args.tokenfile:
-                        move_token_to_failed(args.tokenfile)
+                    if remove_token and tokenfile:
+                        move_token_to_failed(tokenfile)
                     cleanup_and_exit(
                         os.path.expanduser('~'),
                         base,
-                        original_token_file=args.tokenfile,
+                        original_token_file=tokenfile,
                         remove_token=True
                     )
                     return []
@@ -590,15 +601,16 @@ def main():
     setup_logging()
     cfg = init_config(args)
     base = prepare_dirs(cfg, args)
+    tokenfile = get_tokenfile_from_info(base)
     download_phase(cfg, args, base)
-    files = collect_files(cfg, args, base)
+    files = collect_files(cfg, args, base, tokenfile)
     if not files:
         logging.info('No files found to process. Exiting early.')
         if args.rundate != 'localfolder':
             cleanup_and_exit(
                 os.path.expanduser('~'),
                 base,
-                original_token_file=args.tokenfile,
+                original_token_file=tokenfile,
                 remove_token=True
             )
         return
@@ -626,12 +638,12 @@ def main():
 
 
     if not args.rundate == 'localfolder':
-        if args.tokenfile:
-            move_token_to_successful(args.tokenfile)
+        if tokenfile:
+            move_token_to_successful(tokenfile)
         cleanup_and_exit(
             os.path.expanduser('~'),
             base,
-            original_token_file=args.tokenfile,
+            original_token_file=tokenfile,
             remove_token=False
         )
 

@@ -10,9 +10,9 @@ When the pipeline cannot locate the expected FITS files and the token is
 older than 30 days, the token file is moved into a ``failed_tokens``
 folder for later inspection.
 
-Upon successful completion, any provided token file is instead moved
+Upon successful completion, any token file present is instead moved
 to a ``successful_token`` directory.
 
-The script accepts an optional ``--tokenfile`` argument pointing to the
-token that should be removed on completion.
+The pipeline automatically detects this token file when running in
+``generic`` mode.
 
