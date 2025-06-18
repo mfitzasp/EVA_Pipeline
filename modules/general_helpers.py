@@ -31,7 +31,8 @@ import random
 import time
 import psutil
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
+import re
 import os
 from pathlib import Path
 import shutil
@@ -370,6 +371,52 @@ def archive_downloader(frame, session):
       f.write(session.get(frame['url']).content)
 
     return str(frame['filename']) + " downloaded."
+
+
+def wait_for_file(filepath, timeout=6 * 60 * 60, interval=60):
+    """Wait for a file to appear on disk.
+
+    Parameters
+    ----------
+    filepath : str or Path
+        Path of the file to wait for.
+    timeout : int, optional
+        Maximum time in seconds to wait. Defaults to six hours.
+    interval : int, optional
+        Sleep duration between existence checks in seconds. Defaults to sixty
+        seconds.
+
+    Returns
+    -------
+    bool
+        ``True`` if the file exists within the timeout period, ``False``
+        otherwise.
+    """
+
+    start = time.time()
+    p = Path(filepath)
+
+    while not p.exists():
+        if time.time() - start > timeout:
+            return False
+        logging.info(f"Waiting for file {p} to appear")
+        time.sleep(interval)
+
+    return True
+
+def token_is_older_than(token_name, days=30):
+    """Return ``True`` if the date embedded in ``token_name`` is older than ``days``."""
+
+    m = re.search(r"(\d{8})", token_name)
+    if not m:
+        return False
+
+    try:
+        tdate = datetime.strptime(m.group(1), "%Y%m%d").date()
+    except ValueError:
+        return False
+
+    return (datetime.utcnow().date() - tdate) > timedelta(days=days)
 
 def wait_for_diskspace(directory="/", threshold=0.75, interval=5, timeout=3 * 60 * 60):
     """
