@@ -73,7 +73,8 @@ from modules.general_helpers import (
     archive_downloader, de_fz_file,
     wait_for_file,
     token_is_older_than,
-    move_token_to_failed
+    move_token_to_failed,
+    move_token_to_successful
 )
 from modules.platesolving import multiprocess_crop_images_for_flatness
 from modules.archive import archive_preparer
@@ -622,14 +623,16 @@ def main():
     do_banzai_file_type(cfg, args.telescope, base)
         
     do_archive(cfg, base)
-    
-    
+
+
     if not args.rundate == 'localfolder':
+        if args.tokenfile:
+            move_token_to_successful(args.tokenfile)
         cleanup_and_exit(
             os.path.expanduser('~'),
             base,
             original_token_file=args.tokenfile,
-            remove_token=True
+            remove_token=False
         )
 
 

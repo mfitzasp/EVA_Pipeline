@@ -430,6 +430,18 @@ def move_token_to_failed(token_file):
     except Exception as e:
         logging.info(f"Failed to move token file '{tpath}': {e}")
 
+def move_token_to_successful(token_file):
+    """Move ``token_file`` into a ``successful_token`` directory next to it."""
+
+    tpath = Path(token_file)
+    dest_dir = tpath.parent / 'successful_token'
+    try:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(tpath), dest_dir / tpath.name)
+        logging.info(f"Token file '{tpath}' moved to '{dest_dir}'.")
+    except Exception as e:
+        logging.info(f"Failed to move token file '{tpath}': {e}")
+
 def wait_for_diskspace(directory="/", threshold=0.75, interval=5, timeout=3 * 60 * 60):
     """
     Waits until the used disk space in a specified directory falls below a threshold,
