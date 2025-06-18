@@ -461,11 +461,19 @@ def construct_images(headers, human_names, cfg, args, base):
     wait_for_resources()
     # Final smart-stack image construction
     fits_ss = glob.glob(str(Path(base) / 'sstacksdirectory' / '*.fits'))
+    # collect any variance frames; these will be copied out but not processed
+    variance_frames = [f for f in fits_ss if os.path.basename(f).startswith('variance_')]
+    fits_ss = [f for f in fits_ss if not os.path.basename(f).startswith('variance_')]
     
     n2 = max(1, min(math.floor(cpu*0.25), len(fits_ss)))
     with Pool(n2) as p:
         tasks = [(f, base) for f in fits_ss]
         p.starmap(multiprocess_final_image_construction_smartstack, tasks)
+
+    # Copy variance frames directly to outputdirectory without processing
+    for vf in variance_frames:
+        dest = Path(base) / 'outputdirectory' / os.path.basename(vf)
+        shutil.copy(vf, dest)
 
     # Previews
     wait_for_resources()
