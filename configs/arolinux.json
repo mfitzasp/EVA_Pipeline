@@ -19,5 +19,7 @@
     "de_fz_file": true
   },
   "hold_all_calibrations_in_memory": false,
-  "python_command": "/usr/bin/python3"
+  "python_command": "/usr/bin/python3",
+  "cpu_threshold": 80,
+  "memory_threshold": 60
 }
