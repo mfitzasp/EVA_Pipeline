@@ -1167,7 +1167,20 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
 
 
         # This routine creates a BANZAI-esque file with the main SCI image and header in it
-        hdufz = fits.CompImageHDU(np.array(banzai_image, dtype=np.float32), banzai_image_header)
+        # Astropy expects the header to contain valid NAXIS information.  If
+        # the header is incomplete (e.g. when NAXIS==0), CompImageHDU raises a
+        # ZeroDivisionError internally while setting up compression tiles.  In
+        # that case, the image is effectively unusable so skip creating the
+        # BANZAI file for this frame.
+        try:
+            hdufz = fits.CompImageHDU(np.array(banzai_image, dtype=np.float32),
+                                      banzai_image_header)
+        except ZeroDivisionError:
+            logging.info(
+                "Skipping BZESK creation for %s due to invalid header (zero tile size)",
+                file,
+            )
+            return
 
         bzesque_file.append(hdufz)
 
