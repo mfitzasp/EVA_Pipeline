@@ -466,12 +466,18 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
         newPixScale=float(0.74)*u.arcsec
         logging.info ("Drizzling to resolution: " + str(newPixScale)+ " arcseconds/pixel.")
         newheader['PIXSCALE']=float(0.5)
-        
+
     else:
 
         newPixScale=float(newheader["DRZPIXSC"])*u.arcsec
         logging.info ("Drizzling to resolution: " + str(newPixScale)+ " arcseconds/pixel.")
         newheader['PIXSCALE']=float(newheader["DRZPIXSC"])
+
+    if largest_image_rotation > 15:
+        logging.info(
+            f"Smartstack aborted: image rotation {largest_image_rotation:.2f} exceeds 15 degrees"
+        )
+        return
     try:        
         wcs_out, shape_out = find_optimal_celestial_wcs(inputList, resolution=newPixScale) #
     except:
