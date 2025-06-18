@@ -346,6 +346,15 @@ def header_merge(headers, base):
             if wfile_path.exists():
                 wh = fits.open(wfile_path)[0].header
                 h.update(wcs.WCS(wh).to_header(relax=True))
+                # Calculate camera rotation from WCS
+                try:
+                    c11 = h.get('CD1_1', h.get('PC1_1'))
+                    c12 = h.get('CD1_2', h.get('PC1_2'))
+                    if c11 is not None and c12 is not None:
+                        rot = np.degrees(np.arctan2(-c12, c11)) % 360
+                        h['CAMROTAT'] = (rot, 'Camera rotation angle [deg]')
+                except Exception:
+                    pass
                 wfile_path.unlink()
         except:
             print (traceback.format_exc())
