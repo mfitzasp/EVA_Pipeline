@@ -77,7 +77,15 @@ def process_preastrom(file):
 
     hdu1 = np.load(file)
     exptime = float(file.split('EXP')[1])
-    pixscale = float(file.split('PIXSCALE')[1])
+    pixscale_str = file.split('PIXSCALE')[1]
+    if pixscale_str.lower().startswith('unknown'):
+        logging.info(f"Skipping {file} due to unknown pixelscale")
+        try:
+            os.remove(file)
+        except Exception:
+            pass
+        return
+    pixscale = float(pixscale_str)
     image_saturation_level = float(file.split('SATURATE')[1])
     # If it has been substacked, then it has already been reduced at site and only needs the astrometry.
     docosmic=str(file.split('DOCOSMIC')[1])
@@ -145,7 +153,15 @@ def process_lco_preastrom(file):
 
     hdu1 = np.load(file)
     exptime = float(file.split('EXP')[1])
-    pixscale = float(file.split('PIXSCALE')[1])
+    pixscale_str = file.split('PIXSCALE')[1]
+    if pixscale_str.lower().startswith('unknown'):
+        logging.info(f"Skipping {file} due to unknown pixelscale")
+        try:
+            os.remove(file)
+        except Exception:
+            pass
+        return
+    pixscale = float(pixscale_str)
     image_saturation_level = float(file.split('SATURATE')[1])
     gain = float(file.split('GAIN')[1])
     rdnoise = float(file.split('RDNOISE')[1])
@@ -216,7 +232,11 @@ def run_astrometry_net(file, codedir):
     logging.info(file)
     RAest = float(file.split('RAdeg')[1])
     DECest = float(file.split('DECdeg')[1])
-    pixscale = float(file.split('PIXSCALE')[1])
+    pixscale_str = file.split('PIXSCALE')[1]
+    if pixscale_str.lower().startswith('unknown'):
+        logging.info(f"Skipping {file} due to unknown pixelscale")
+        return Path(file).name.split('PIXSCALE')[-1], None
+    pixscale = float(pixscale_str)
     imageh = int(file.split('IMAGEH')[1])
     imagew = int(file.split('IMAGEW')[1])
     pixlow = pixscale * 0.9
