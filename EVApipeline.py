@@ -70,7 +70,8 @@ from modules.general_helpers import (
     cleanup_and_exit,
     wait_for_diskspace,
     load_config,
-    archive_downloader, de_fz_file
+    archive_downloader, de_fz_file,
+    wait_for_file
 )
 from modules.platesolving import multiprocess_crop_images_for_flatness
 from modules.archive import archive_preparer
@@ -214,13 +215,20 @@ def collect_files(cfg, args, base):
             camname=splitfile[0].split('-')[1]
             filedate=splitfile[2].split('-')[1]
             p=Path(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f)
-            
-            
+            alt=Path(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f.replace('.fits.fz','.fits'))
+
+            if not p.exists() and not alt.exists():
+                wait_for_file(p)
+
             if p.suffixes[-2:] == ['.fits','.fz']:
                 # Sometimes, particularly if this is run twice or more
-                # The file will already be uncompressed.                
+                # The file will already be uncompressed.
                 out = Path(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate) / f.replace('.fits.fz','.fits')
-                
+
+                if not p.exists() and alt.exists():
+                    flist.append(str(alt))
+                    continue
+
                 try:
                     hd = fits.open(p, ignore_missing_end=True)
                     arr = np.asarray(hd[1].data if len(hd)>1 else hd[0].data)
@@ -234,19 +242,24 @@ def collect_files(cfg, args, base):
                             os.remove(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f)
                         except:
                             logging.info("Couldn't remove " + cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f)
-                    
+
                     flist.append(str(out))
-                    
+
                 except:
-                    p=Path(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f.replace('.fits.fz','.fits'))                    
-                    
+                    p=alt
+
                     if os.path.exists(p):
                         logging.info ("couldn't open fits.fz,already uncompressed. ")
                         flist.append(str(out))
                     else:
-                        logging.info ("Couldn't find file")                
+                        logging.info ("Couldn't find file")
             else:
-                flist.append(str(p))
+                if p.exists():
+                    flist.append(str(p))
+                elif alt.exists():
+                    flist.append(str(alt))
+                else:
+                    logging.info ("Couldn't find file")
         return flist
 
     # if neither of them then return the files in the root of the current basedirectory

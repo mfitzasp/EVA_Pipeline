@@ -371,6 +371,38 @@ def archive_downloader(frame, session):
 
     return str(frame['filename']) + " downloaded."
 
+
+def wait_for_file(filepath, timeout=6 * 60 * 60, interval=60):
+    """Wait for a file to appear on disk.
+
+    Parameters
+    ----------
+    filepath : str or Path
+        Path of the file to wait for.
+    timeout : int, optional
+        Maximum time in seconds to wait. Defaults to six hours.
+    interval : int, optional
+        Sleep duration between existence checks in seconds. Defaults to sixty
+        seconds.
+
+    Returns
+    -------
+    bool
+        ``True`` if the file exists within the timeout period, ``False``
+        otherwise.
+    """
+
+    start = time.time()
+    p = Path(filepath)
+
+    while not p.exists():
+        if time.time() - start > timeout:
+            return False
+        logging.info(f"Waiting for file {p} to appear")
+        time.sleep(interval)
+
+    return True
+
 def wait_for_diskspace(directory="/", threshold=0.75, interval=5, timeout=3 * 60 * 60):
     """
     Waits until the used disk space in a specified directory falls below a threshold,
