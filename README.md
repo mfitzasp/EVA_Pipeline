@@ -6,7 +6,10 @@ June 2025: photometry subprocesses now run in their temporary
 directories so that the bundled `default.param` and `default.psfex`
 configuration files are found correctly.
 
-Tokens older than 30 days are no longer deleted on failure. Instead they
-are moved to a `failed_tokens` directory next to the original token
-location.
+When the pipeline cannot locate the expected FITS files and the token is
+older than 30 days, the token file is moved into a ``failed_tokens``
+folder for later inspection.
+
+The script accepts an optional ``--tokenfile`` argument pointing to the
+token that should be removed on completion.
 

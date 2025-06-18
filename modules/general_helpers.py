@@ -92,32 +92,25 @@ def load_config(pipeid, local_or_online):
 
 def cleanup_and_exit(homedir, basedirectory, original_token_file=None, remove_token=False):
     """
-    Changes to the home directory, cleans up the temporary directory,
-    and optionally moves a token file to ``failed_tokens``.
+    Changes to the home directory, cleans up the temporary directory, 
+    and optionally removes a token file.
 
     Parameters:
         homedir (str): Path to the home directory to switch to.
         basedirectory (str): Path to the base directory to remove.
-        original_token_file (str, optional): Path to the token file that may be
-            moved if ``remove_token`` is ``True``.
-        remove_token (bool): If ``True`` and ``original_token_file`` is
-            provided, the token will be moved to a ``failed_tokens`` directory
-            instead of being deleted.
+        original_token_file (str, optional): Path to the token file to be removed.
+        remove_token (bool): Whether to remove the token file (default is False).
 
     Returns:
         None
     """
-    # Optionally move token file to failed_tokens
+    # Optionally remove token file
     if remove_token and original_token_file:
         try:
-            tpath = Path(original_token_file)
-            dest_dir = tpath.parent / 'failed_tokens'
-            dest_dir.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(tpath), dest_dir / tpath.name)
-            logging.info(
-                f"Token file '{tpath}' moved to '{dest_dir}'.")
+            os.remove(original_token_file)
+            logging.info(f"Token file '{original_token_file}' removed.")
         except Exception as e:
-            logging.info(f"Failed to move token file: {e}")
+            logging.info(f"Failed to remove token file: {e}")
 
     # Change to home directory
     try:
@@ -424,6 +417,18 @@ def token_is_older_than(token_name, days=30):
         return False
 
     return (datetime.utcnow().date() - tdate) > timedelta(days=days)
+
+def move_token_to_failed(token_file):
+    """Move ``token_file`` into a ``failed_tokens`` directory next to it."""
+
+    tpath = Path(token_file)
+    dest_dir = tpath.parent / 'failed_tokens'
+    try:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(tpath), dest_dir / tpath.name)
+        logging.info(f"Token file '{tpath}' moved to '{dest_dir}'.")
+    except Exception as e:
+        logging.info(f"Failed to move token file '{tpath}': {e}")
 
 def wait_for_diskspace(directory="/", threshold=0.75, interval=5, timeout=3 * 60 * 60):
     """

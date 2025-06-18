@@ -72,7 +72,8 @@ from modules.general_helpers import (
     load_config,
     archive_downloader, de_fz_file,
     wait_for_file,
-    token_is_older_than
+    token_is_older_than,
+    move_token_to_failed
 )
 from modules.platesolving import multiprocess_crop_images_for_flatness
 from modules.archive import archive_preparer
@@ -101,6 +102,7 @@ def parse_args():
     p.add_argument('filters')
     p.add_argument('osc')
     p.add_argument('pipeid')
+    p.add_argument('--tokenfile', default=None, help='Path to the token file')
     return p.parse_args()
 
 def setup_logging():
@@ -230,10 +232,13 @@ def collect_files(cfg, args, base):
             if not p.exists() and not alt.exists():
                 if not wait_for_file(p):
                     remove_token = token_is_older_than(Path(base).name)
+                    if remove_token and args.tokenfile:
+                        move_token_to_failed(args.tokenfile)
                     cleanup_and_exit(
                         os.path.expanduser('~'),
                         base,
-                        remove_token=remove_token
+                        original_token_file=args.tokenfile,
+                        remove_token=True
                     )
                     return []
 
@@ -589,7 +594,12 @@ def main():
     if not files:
         logging.info('No files found to process. Exiting early.')
         if args.rundate != 'localfolder':
-            cleanup_and_exit(os.path.expanduser('~'), base)
+            cleanup_and_exit(
+                os.path.expanduser('~'),
+                base,
+                original_token_file=args.tokenfile,
+                remove_token=True
+            )
         return
     prepare_local_output_dirs(files, cfg)
     print (files)
@@ -615,7 +625,12 @@ def main():
     
     
     if not args.rundate == 'localfolder':
-        cleanup_and_exit(os.path.expanduser('~'), base)
+        cleanup_and_exit(
+            os.path.expanduser('~'),
+            base,
+            original_token_file=args.tokenfile,
+            remove_token=True
+        )
 
 
 if __name__ == '__main__':
