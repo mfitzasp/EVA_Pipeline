@@ -53,16 +53,22 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
                 headerdict[entry] = tempheader[entry]
                 
         if local_copy:
-    
+
             dayobs=str(tempheader['DAY-OBS'])
             origname=str(tempheader['ORIGNAME'])
             try:
                 seq_number='_' + str(origname.split('-')[3])
             except:
                 seq_number='_unknown'
-        
+
             # Copy the fits over (directories assumed pre-created)
             shutil.copy(file, local_output_folder + '/' + dayobs + '/fits/' + file.split('/')[-1].replace('.fits',seq_number+'.fits'))
+
+        # Skip ingestion of essentially blank files
+        if os.path.getsize(file) < 500 * 1024:
+            logging.info(f"{file} smaller than 500kb; skipping ingestion queue")
+            # return before JSON metadata is produced or copied
+            return queue_add
     
         # Need to replace this hack by number of images requested by LCO. LCO does not have nexpreq header
         try:    
