@@ -119,6 +119,15 @@ def init_config(args):
     cfg['filters'] = args.filters.split(',')
     return cfg
 
+# Convenience wrapper to apply configured thresholds
+def wait_for_resources_cfg(cfg, **kwargs):
+    """Call :func:`wait_for_resources` using thresholds from ``cfg``."""
+    wait_for_resources(
+        memory_fraction=cfg.get('memory_threshold', 70),
+        cpu_fraction=cfg.get('cpu_threshold', 50),
+        **kwargs,
+    )
+
 def prepare_dirs(cfg, args):
     if args.mode == 'online':
         base = Path(cfg['working_directory']) / args.telescope / args.rundate
@@ -279,7 +288,7 @@ def check_and_deflate(files, cfg, args, base):
     # Get the subprocess script into the directory
     shutil.copy(os.path.expanduser(cfg['codedir']) + '/subprocesses/filechecker.py', Path(base) / 'filechecker.py')
     script_path = str(Path(base) / 'filechecker.py')
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
     if cfg['multiprocess']['file_checking']:
@@ -311,7 +320,7 @@ def target_phase(base):
 
 def pre_astrometry(tdir, headers, cfg, args):
     logging.info('Pre-Astrometry')
-    wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
+    wait_for_resources_cfg(cfg, wait_for_harddrive=True, workdrive=cfg['workdrive'])
     files = [str(p) for p in Path(tdir).glob('*.npy')]
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
@@ -322,7 +331,7 @@ def pre_astrometry(tdir, headers, cfg, args):
     else:
         for f in files:
             fn(f)
-    wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
+    wait_for_resources_cfg(cfg, wait_for_harddrive=True, workdrive=cfg['workdrive'])
 
     # Refresh the file list to pick up the newly created FLATTED files
     files = [str(p) for p in Path(tdir).glob('FLATTED*.npy')]
@@ -425,11 +434,11 @@ def enrich_build(headers, cfg, args, base):
     for i, h in enumerate(headers):
         headers[i] = value_add_header(h, args.telescope)
         human_names.append(human_namer(headers[i]))
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     logging.info('Freshening headers')
     with Pool() as p:
         headers = p.map(freshen_header, headers)
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     logging.info('Cropping for flatness')
     with Pool() as p:
         tasks = [(h, base) for h in headers]
@@ -438,7 +447,7 @@ def enrich_build(headers, cfg, args, base):
 
 def construct_images(headers, human_names, cfg, args, base):
     logging.info('Constructing images')
-    wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
+    wait_for_resources_cfg(cfg, wait_for_harddrive=True, workdrive=cfg['workdrive'])
     cpu = os.cpu_count() or 1
     tasks = [(h['ORIGNAME'].replace('.fits.fz','.npy').replace('.fits','.npy'), h, nm, base)
              for h, nm in zip(headers, human_names)]
@@ -485,10 +494,10 @@ def construct_images(headers, human_names, cfg, args, base):
             logging.info('Skipping smart stack %s: too many files (%d)', sub.name, len(files))
             continue
         # convert Paths to str
-        wait_for_resources()
+        wait_for_resources_cfg(cfg)
         smart_stack([str(f) for f in files], args.telescope, str(base), cfg['memmappath'], cfg['calibration_directory'], cfg['codedir'])
 
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     # Final smart-stack image construction
     fits_ss = glob.glob(str(Path(base) / 'sstacksdirectory' / '*.fits'))
     # collect any variance frames; these will be copied out but not processed
@@ -506,7 +515,7 @@ def construct_images(headers, human_names, cfg, args, base):
         shutil.copy(vf, dest)
 
     # Previews
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     previews = glob.glob(str(Path(base) / 'outputdirectory' / '*.fits'))
     # don't make preview jpgs of variance frames
     previews = [f for f in previews if not os.path.basename(f).startswith('variance_')]
@@ -523,7 +532,7 @@ def do_photometry(cfg, base):
     # Can't find a way around actually copying the file into the directory
     shutil.copy(os.path.expanduser(cfg['codedir']) + '/photometryparams/default.psfex', Path(base)/'default.psfex')
     
-    wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
+    wait_for_resources_cfg(cfg, wait_for_harddrive=True, workdrive=cfg['workdrive'])
     files = glob.glob(str(Path(base)/'outputdirectory/*.fits'))
     # don't photometer variance frames
     files = [f for f in files if not os.path.basename(f).startswith('variance_')]
@@ -531,10 +540,10 @@ def do_photometry(cfg, base):
     n = max(1, min(math.floor(cpu*0.25), len(files)))
     with Pool(n) as p:
         p.starmap(run_source_extractor, [(f, cfg['codedir']) for f in files])
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     with Pool(n) as p:
         p.starmap(run_pre_psfex, [(f, cfg['codedir']) for f in files])
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     with Pool(n) as p:
         p.starmap(run_actual_psfex, [(f, cfg['codedir']) for f in files])
         
@@ -555,7 +564,7 @@ def do_banzai_file_type(cfg, telescope, base):
 def do_archive(cfg, base):
     logging.info('Archive preparation')
     wait_for_diskspace(cfg['working_directory'], 0.9)
-    wait_for_resources(wait_for_harddrive=True, workdrive=cfg['workdrive'])
+    wait_for_resources_cfg(cfg, wait_for_harddrive=True, workdrive=cfg['workdrive'])
     files = glob.glob(str(Path(base)/'outputdirectory/*.fit*'))
     tasks = [[f, cfg['largedataset_output_folder'], cfg['shortexposure_output_folder'], cfg['ingestion_output_folder'], cfg['local_output_folder'], True, True] # The two trues are local copy then ingest... will be a config soon
              for f in files]
@@ -587,19 +596,19 @@ def main():
     files, headers = check_and_deflate(files, cfg, args, base)
     tdir = target_phase(base)
     # Pre-astrometry and WCS generation run inside Targets dir
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     headers = pre_astrometry(tdir, headers, cfg, args)
     headers = header_merge(headers, base)
     cleanup_intermediate(base)
     make_dirs_output(base)
     headers, human_names = enrich_build(headers, cfg, args, base)
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     construct_images(headers, human_names, cfg, args, base)
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     do_photometry(cfg, base)
     
     # Make BANZAI files
-    wait_for_resources()
+    wait_for_resources_cfg(cfg)
     do_banzai_file_type(cfg, args.telescope, base)
         
     do_archive(cfg, base)
