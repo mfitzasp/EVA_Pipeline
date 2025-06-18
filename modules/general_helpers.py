@@ -149,6 +149,14 @@ def test_connect(host='http://google.com'):
         return True
     except:
         return False
+
+def _is_float(value):
+    """Check if value can be converted to a float."""
+    try:
+        float(value)
+        return True
+    except (TypeError, ValueError):
+        return False
     
 def de_fz_file(infopacket, base):
     """
@@ -229,6 +237,22 @@ def de_fz_file(infopacket, base):
             tempheader=hdul[1].header
         except:
             tempheader=hdul[0].header
+
+        # Verify that PIXSCALE, GAIN, and RDNOISE are present and valid
+        for key in ['PIXSCALE', 'GAIN', 'RDNOISE']:
+            if key not in tempheader:
+                logging.info(f"{file} missing {key} in header. Rejecting early.")
+                return None
+
+            if not _is_float(tempheader[key]):
+                logging.info(f"{file} has invalid {key} value. Rejecting early.")
+                return None
+
+            if key in ['GAIN', 'RDNOISE'] and float(tempheader[key]) > 500:
+                logging.info(
+                    f"{file} {key} value {tempheader[key]} out of range. Rejecting early."
+                )
+                return None
 
         # IF LCO, then get the bpm out and apply it.
         try:
