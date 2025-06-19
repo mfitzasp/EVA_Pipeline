@@ -570,12 +570,34 @@ def do_banzai_file_type(cfg, telescope, base):
     files = glob.glob(str(Path(base)/'outputdirectory/*.fits'))
     cpu = os.cpu_count() or 1
     n = max(1, min(math.floor(cpu*0.25), len(files)))
-    
-    banzai_list=[]
+
+    smstack_ids = set()
+    for f in files:
+        if 'SmSTACK-' in os.path.basename(f):
+            try:
+                sid = fits.getheader(f, memmap=False).get('SSTKID')
+                if sid:
+                    smstack_ids.add(sid)
+            except Exception:
+                logging.info('Could not read header for %s', f)
+
+    banzai_list = []
     for file in files:
-        banzai_list.append([file, telescope, str(base), cfg['calibration_directory']])
-    with Pool(n) as p:
-        p.starmap(make_banzai_file_out_of_EVA, banzai_list)
+        skip = False
+        if 'SmSTACK-' not in os.path.basename(file):
+            try:
+                sid = fits.getheader(file, memmap=False).get('SSTKID')
+                if sid and sid in smstack_ids:
+                    logging.info('Skipping BZESK creation for %s as SmSTACK exists', file)
+                    skip = True
+            except Exception:
+                logging.info('Could not read header for %s', file)
+        if not skip:
+            banzai_list.append([file, telescope, str(base), cfg['calibration_directory']])
+
+    if banzai_list:
+        with Pool(n) as p:
+            p.starmap(make_banzai_file_out_of_EVA, banzai_list)
 
 
 def do_archive(cfg, base):
