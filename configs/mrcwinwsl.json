@@ -19,7 +19,7 @@
     "de_fz_file": true
   },
   "hold_all_calibrations_in_memory": false,
-  "python_command": "python"
+  "python_command": "python",
   "cpu_threshold": 80,
   "memory_threshold": 60
 }
