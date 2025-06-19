@@ -574,10 +574,12 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
                     banzai_image_header['SMARTSTK'] = (                    True ,'Is this part of an EVA smartstack')
                     banzai_image_header['SSTKLEN'] = (                     eva_image_header['SSTKLEN']  ,'Number of intended smartstack components')
                     banzai_image_header['SSTKNUM'] = (                    eva_image_header['SSTKNUM'] ,'ID of smartstack component')
+                banzai_image_header['SSTKID'] = ( eva_image_header.get('SSTKID', eva_image_header['SMARTSTK']) ,'Smartstack identifier')
             except:
                 banzai_image_header['SMARTSTK'] = (                    False ,'Is this part of an EVA smartstack')
                 banzai_image_header['SSTKLEN'] = (                     1  ,'Number of intended smartstack components')
                 banzai_image_header['SSTKNUM'] = (                    1 ,'ID of smartstack component')
+                banzai_image_header['SSTKID'] = ( eva_image_header.get('SSTKID', eva_image_header.get('SMARTSTK','')) ,'Smartstack identifier')
 
             banzai_image_header['FILTER1'] = ( eva_image_header['FILTER']       ,'The first filter wheel filter type')
             banzai_image_header['FILTERI1']= ( 'N.I.Y.'        ,'The first filter wheel filter id')
