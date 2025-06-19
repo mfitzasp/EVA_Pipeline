@@ -96,17 +96,21 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
             elif ('EVA-' in file) and "lcogt" in str(tempheader['ORIGIN']).lower():
               logging.info ("not reuploading an individual EVA for an original LCO file: " + str(file))  
             
-            elif ('BZESK' in file) and tempheader['EXPTIME'] >= 1:# or ('no' in str(tempheader['SMARTSTK'])) or ('False' in str(tempheader['SMARTSTK'])):
-                try:
-                    shutil.copy(file, relevant_archive_folder) 
-                    landing_filename=relevant_archive_folder +'/' + file.split('/')[-1]
-                    with open(landing_filename+'.tempjson','w') as tempfile:
-                        json.dump(headerdict, tempfile, indent=4)
-                    #np.save(landing_filename+'.temppickle', headerdict, allow_pickle=True)
-                    os.rename (landing_filename+'.tempjson', landing_filename+'.json')
-                except:
-                    logging.info(traceback.format_exc())
-            elif ('BZESK' not in file) and tempheader['EXPTIME'] < 1:
+            elif ('BZESK-' in file) and tempheader['EXPTIME'] >= 1:
+                smartstk = str(tempheader.get('SMARTSTK', 'False')).lower()
+                if ('smstack' not in file.lower()) and smartstk in ['true', 't', 'yes', '1']:
+                    logging.info(f"Skipping smartstack component {file}")
+                else:
+                    try:
+                        shutil.copy(file, relevant_archive_folder)
+                        landing_filename=relevant_archive_folder +'/' + file.split('/')[-1]
+                        with open(landing_filename+'.tempjson','w') as tempfile:
+                            json.dump(headerdict, tempfile, indent=4)
+                        #np.save(landing_filename+'.temppickle', headerdict, allow_pickle=True)
+                        os.rename (landing_filename+'.tempjson', landing_filename+'.json')
+                    except:
+                        logging.info(traceback.format_exc())
+            elif ('BZESK-' not in file) and tempheader['EXPTIME'] < 1:
                 try:
                     shutil.copy(file, relevant_archive_folder) 
                     landing_filename=relevant_archive_folder +'/' + file.split('/')[-1]
