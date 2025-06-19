@@ -242,7 +242,7 @@ def collect_files(cfg, args, base, tokenfile=None):
             alt=Path(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f.replace('.fits.fz','.fits'))
 
             if not p.exists() and not alt.exists():
-                if not wait_for_file(p):
+                if not wait_for_file(p, altpath=alt):
                     remove_token = token_is_older_than(Path(base).name)
                     if remove_token and tokenfile:
                         move_token_to_failed(tokenfile)
