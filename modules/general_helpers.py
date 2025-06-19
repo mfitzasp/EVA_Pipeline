@@ -373,13 +373,16 @@ def archive_downloader(frame, session):
     return str(frame['filename']) + " downloaded."
 
 
-def wait_for_file(filepath, timeout=6 * 60 * 60, interval=60):
+def wait_for_file(filepath, altpath=None, timeout=6 * 60 * 60, interval=60):
     """Wait for a file to appear on disk.
 
     Parameters
     ----------
     filepath : str or Path
-        Path of the file to wait for.
+        Path of the primary file to wait for.
+    altpath : str or Path, optional
+        Alternative path that also satisfies the wait condition. If ``None``,
+        only ``filepath`` is considered.
     timeout : int, optional
         Maximum time in seconds to wait. Defaults to six hours.
     interval : int, optional
@@ -389,17 +392,19 @@ def wait_for_file(filepath, timeout=6 * 60 * 60, interval=60):
     Returns
     -------
     bool
-        ``True`` if the file exists within the timeout period, ``False``
+        ``True`` if either file exists within the timeout period, ``False``
         otherwise.
     """
 
     start = time.time()
     p = Path(filepath)
+    alt = Path(altpath) if altpath else None
+    targets = f"{p}" if not alt else f"{p} or {alt}"
 
-    while not p.exists():
+    while not p.exists() and not (alt and alt.exists()):
         if time.time() - start > timeout:
             return False
-        logging.info(f"Waiting for file {p} to appear")
+        logging.info(f"Waiting for file {targets} to appear")
         time.sleep(interval)
 
     return True
