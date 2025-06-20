@@ -1428,6 +1428,43 @@ def make_quickanalysis_file(file):
 
     qa_data = {'source_list': source_info}
 
+    if image_data is not None:
+        try:
+            rows, cols = image_data.shape
+            mid_row = rows // 2
+            mid_col = cols // 2
+
+            slices = {
+                'row': image_data[mid_row, :].astype(float).tolist(),
+                'column': image_data[:, mid_col].astype(float).tolist(),
+                'diag1': np.diag(image_data).astype(float).tolist(),
+                'diag2': np.diag(np.fliplr(image_data)).astype(float).tolist()
+            }
+
+            grid = 10
+            box_rows = rows // grid
+            box_cols = cols // grid
+            box_means = []
+            for i in range(grid):
+                row_vals = []
+                for j in range(grid):
+                    box = image_data[i*box_rows:(i+1)*box_rows,
+                                       j*box_cols:(j+1)*box_cols]
+                    row_vals.append(float(bn.nanmean(box)))
+                box_means.append(row_vals)
+
+            flat = image_data.ravel()[~np.isnan(image_data.ravel())].astype(int)
+            unique, counts = np.unique(flat, return_counts=True)
+            histogram = [[int(u), int(c)] for u, c in zip(unique, counts)]
+
+            qa_data.update({
+                'slices': slices,
+                'box_means': box_means,
+                'histogram': histogram
+            })
+        except Exception:
+            pass
+
     dest = file.replace('outputdirectory', 'quickanalysis')\
               .replace('EVA-', 'quickanalysis-')\
               .replace('SmSTACK-', 'quickanalysisSmSTACK-')\
