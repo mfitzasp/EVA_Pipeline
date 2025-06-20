@@ -46,6 +46,7 @@ import warnings
 from pathlib import Path
 from multiprocessing import Pool
 from multiprocessing.pool import ThreadPool
+from concurrent.futures import ProcessPoolExecutor, TimeoutError as FuturesTimeoutError
 import traceback
 
 import numpy as np
@@ -355,10 +356,19 @@ def pre_astrometry(tdir, headers, cfg, args):
     files = [str(p) for p in Path(tdir).glob('FLATTED*.npy')]
     n2 = max(1, min(math.floor(cpu*0.25), len(files)))
 
-    args_list = [(f, cfg['codedir'], cfg.get('astrometry_timeout', 900)) for f in files]
+    astrometry_timeout = cfg.get('astrometry_timeout', 900)
+    run_timeout = cfg.get('astrometry_run_timeout', astrometry_timeout)
+    args_list = [(f, cfg['codedir'], astrometry_timeout) for f in files]
 
-    with Pool(n2) as p:
-        results = p.starmap(run_astrometry_net, args_list)
+    results = []
+    with ProcessPoolExecutor(max_workers=n2) as executor:
+        futures = [executor.submit(run_astrometry_net, *a) for a in args_list]
+        for f, fut in zip(files, futures):
+            try:
+                results.append(fut.result(timeout=run_timeout))
+            except FuturesTimeoutError:
+                logging.info("Astrometry timed out for %s", f)
+                results.append((Path(f).name.split('PIXSCALE')[-1], None))
 
     # Map returned WCS headers back to their originating FITS files
     wcs_map = {name: hdr for name, hdr in results if hdr}
