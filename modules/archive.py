@@ -249,6 +249,25 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
                 os.rename (landing_filename+'.tempjson', landing_filename+'.json')
             except:
                 logging.info(traceback.format_exc())
+
+        # Upload quickanalysis json
+        tempfilename = file.replace('outputdirectory', 'quickanalysis').replace('.fits', '.json').replace('EVA-',
+                              'quickanalysis-').replace(
+            'SmSTACK-', 'quickanalysisSmSTACK-').replace('LoSTACK-', 'quickanalysisLoSTACK-')
+        if os.path.exists(tempfilename):
+
+            if local_copy:
+                shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/quickanalysis/' + tempfilename.split('/')[-1].replace('.json',seq_number+'.json'))
+
+            headerdict['RLEVEL'] = 72
+            try:
+                shutil.copy(tempfilename, relevant_archive_folder)
+                landing_filename=relevant_archive_folder +'/' + tempfilename.split('/')[-1]
+                with open(landing_filename+'.tempjson','w') as tempfile:
+                    json.dump(headerdict, tempfile, indent=4)
+                os.rename (landing_filename+'.tempjson', landing_filename+'.json')
+            except:
+                logging.info(traceback.format_exc())
                 
         return queue_add
     

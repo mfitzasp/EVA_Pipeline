@@ -84,7 +84,8 @@ from modules.final_image import (
     make_banzai_file_out_of_EVA,
     multiprocess_final_image_construction_smartstack,
     multiprocess_final_image_construction_single_image,
-    multiprocess_preview_images
+    multiprocess_preview_images,
+    make_quickanalysis_file
 )
 from functools import partial
 from modules.smart_stack import smart_stack
@@ -442,7 +443,7 @@ def cleanup_intermediate(base):
 def make_dirs_output(base):
     for d in ["workingdirectory", "outputdirectory", "sstacksdirectory", "lstacksdirectory",
               "cimagesdirectory", "previews", "thumbnails", "smalljpgs", "colours",
-              "photometry", "fullphotcatalogues"]:
+              "photometry", "fullphotcatalogues", "quickanalysis"]:
         Path(base, d).mkdir(exist_ok=True)
 
 def enrich_build(headers, cfg, args, base):
@@ -563,7 +564,16 @@ def do_photometry(cfg, base):
     wait_for_resources_cfg(cfg)
     with Pool(n) as p:
         p.starmap(run_actual_psfex, [(f, cfg['codedir']) for f in files])
-        
+    
+
+def do_quickanalysis(cfg, base):
+    logging.info('Quickanalysis files')
+    files = glob.glob(str(Path(base)/'outputdirectory/*.fits'))
+    cpu = os.cpu_count() or 1
+    n = max(1, min(math.floor(cpu*0.25), len(files)))
+    with Pool(n) as p:
+        p.map(make_quickanalysis_file, files)
+
         
 def do_banzai_file_type(cfg, telescope, base):
     logging.info('Banzai-esque Files')
@@ -651,7 +661,9 @@ def main():
     construct_images(headers, human_names, cfg, args, base)
     wait_for_resources_cfg(cfg)
     do_photometry(cfg, base)
-    
+    wait_for_resources_cfg(cfg)
+    do_quickanalysis(cfg, base)
+
     # Make BANZAI files
     wait_for_resources_cfg(cfg)
     do_banzai_file_type(cfg, args.telescope, base)
