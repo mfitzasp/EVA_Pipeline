@@ -556,6 +556,16 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
 
             banzai_image_header['MJD-OBS'] = ( eva_image_header['MJD-OBS'] ,'[UTC days] Start date/time (Modified Julian Date)')
             banzai_image_header['EXPTIME'] = ( eva_image_header['EXPTIME'],'[s] Actual exposure length')
+            if 'EFFEXPT' in eva_image_header:
+                banzai_image_header['EFFEXPT'] = (
+                    eva_image_header['EFFEXPT'],
+                    '[s] Effective open shutter exposure time',
+                )
+            if 'EFFEXPN' in eva_image_header:
+                banzai_image_header['EFFEXPN'] = (
+                    eva_image_header['EFFEXPN'],
+                    'Number of exposures contributing to the stack',
+                )
             try:
                 banzai_image_header['REQTIME'] = ( eva_image_header['REQTIME'] ,'[s] Requested exposure length')
             except:
