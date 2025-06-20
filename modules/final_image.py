@@ -44,6 +44,7 @@ from astropy.coordinates import EarthLocation
 from datetime import  timedelta
 import traceback
 import logging
+import json
 kernel = Gaussian2DKernel(x_stddev=2,y_stddev=2)
 
 
@@ -86,6 +87,8 @@ def multiprocess_final_image_construction_smartstack(file, base):
     tempheader['PSXNAME']=filenameonly.replace('.fits','.psx').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-')
     tempheader['SEANAME']=filenameonly.replace('.fits','.sea').replace('EVA-','seaphot-').replace('SmSTACK-','seaphotSmSTACK-')
     tempheader['SEKNAME']=filenameonly.replace('.fits','.sek').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-')
+    tempheader['QANAME']=filenameonly.replace('.fits','.json').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
+    tempheader['QANAME']=filenameonly.replace('.fits','.json').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
 
     dest = Path(base) / 'outputdirectory' / filenameonly
     fits.writeto(dest, imagedata, tempheader, output_verify='silentfix', overwrite=True)
@@ -1292,3 +1295,44 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
             bzesque_file.writeto(output_bzesk_filename, overwrite=True)
         except:
             logging.info("Failed to make bzesk file: " + str(output_bzesk_filename))
+
+
+def make_quickanalysis_file(file):
+    """Create a quickanalysis JSON from photometry files."""
+    temp_header = fits.getheader(file, memmap=False)
+    if temp_header.get('EXPTIME', 0) < 1:
+        logging.info("Not making quickanalysis file as it isn't a file to be ingested")
+        return
+
+    psxfile = file.replace('outputdirectory', 'photometry').replace('.fits', '.psx')\
+                    .replace('EVA-', 'psxphot-').replace('SmSTACK-', 'psxphotSmSTACK-')\
+                    .replace('LoSTACK-', 'psxphotLoSTACK-')
+    sekfile = file.replace('outputdirectory', 'photometry').replace('.fits', '.sek')\
+                    .replace('EVA-', 'sekphot-').replace('SmSTACK-', 'sekphotSmSTACK-')\
+                    .replace('LoSTACK-', 'sekphotLoSTACK-')
+
+    source_lines = []
+    src_path = None
+    if os.path.exists(psxfile):
+        src_path = psxfile
+    elif os.path.exists(sekfile):
+        src_path = sekfile
+
+    if src_path:
+        with open(src_path, 'r') as f:
+            for line in f:
+                if line.strip() and not line.startswith('#'):
+                    source_lines.append(line.strip())
+
+    qa_data = {'source_list': source_lines}
+
+    dest = file.replace('outputdirectory', 'quickanalysis')\
+              .replace('EVA-', 'quickanalysis-')\
+              .replace('SmSTACK-', 'quickanalysisSmSTACK-')\
+              .replace('LoSTACK-', 'quickanalysisLoSTACK-')\
+              .replace('.fits', '.json')
+
+    os.makedirs(os.path.dirname(dest), exist_ok=True)
+    with open(dest + '.temp', 'w') as fp:
+        json.dump(qa_data, fp, indent=4)
+    os.rename(dest + '.temp', dest)
