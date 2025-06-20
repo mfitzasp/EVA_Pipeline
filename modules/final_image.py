@@ -38,6 +38,7 @@ from pathlib import Path
 from modules.image_functions import calculate_image_fwhm, mid_stretch_jpeg
 import numpy as np
 from PIL import Image
+from scipy.optimize import curve_fit
 from astropy.table import Table
 from astropy.time import Time
 from astropy.coordinates import EarthLocation
@@ -46,6 +47,41 @@ import traceback
 import logging
 import json
 kernel = Gaussian2DKernel(x_stddev=2,y_stddev=2)
+
+
+def _radial_profile(image, center, radius):
+    """Return radii and pixel values around ``center`` up to ``radius`` pixels."""
+    y, x = np.indices(image.shape)
+    dx = x - center[0]
+    dy = y - center[1]
+    r = np.sqrt(dx ** 2 + dy ** 2)
+    mask = r <= radius
+    if not np.any(mask):
+        return []
+    radii = r[mask].ravel().astype(float)
+    values = image[mask].ravel().astype(float)
+    return list(map(lambda rv: [float(rv[0]), float(rv[1])], zip(radii, values)))
+
+
+def _moffat(r, I0, alpha, beta):
+    return I0 * (1 + (r / alpha) ** 2) ** (-beta)
+
+
+def _fit_moffat(pairs):
+    if len(pairs) == 0:
+        return None
+    radii = np.array([p[0] for p in pairs])
+    fluxes = np.array([p[1] for p in pairs])
+    try:
+        p0 = [float(fluxes.max()), 1.0, 1.5]
+        popt, _ = curve_fit(_moffat, radii, fluxes, p0=p0, maxfev=10000)
+        return {
+            'I0': float(popt[0]),
+            'alpha': float(popt[1]),
+            'beta': float(popt[2])
+        }
+    except Exception:
+        return None
 
 
 def multiprocess_final_image_construction_smartstack(file, base):
@@ -1321,20 +1357,41 @@ def make_quickanalysis_file(file):
                     .replace('EVA-', 'sekphot-').replace('SmSTACK-', 'sekphotSmSTACK-')\
                     .replace('LoSTACK-', 'sekphotLoSTACK-')
 
-    source_lines = []
+    source_info = []
     src_path = None
     if os.path.exists(psxfile):
         src_path = psxfile
     elif os.path.exists(sekfile):
         src_path = sekfile
 
+    rmax = int(max(1, 3 * float(temp_header.get('FWHMpix', temp_header.get('FWHM', 3)))))
+    try:
+        image_data = fits.getdata(file, memmap=False)
+    except Exception:
+        image_data = None
+
     if src_path:
         with open(src_path, 'r') as f:
+            header_read = False
             for line in f:
+                if not header_read:
+                    header_read = True
+                    continue
                 if line.strip() and not line.startswith('#'):
-                    source_lines.append(line.strip())
+                    raw = line.strip()
+                    profile = []
+                    fit_params = None
+                    try:
+                        parts = [float(x) for x in raw.split(',')]
+                        xpix, ypix = parts[2], parts[3]
+                        if image_data is not None:
+                            profile = _radial_profile(image_data, (xpix, ypix), rmax)
+                            fit_params = _fit_moffat(profile)
+                    except Exception:
+                        pass
+                    source_info.append({'raw': raw, 'profile': profile, 'moffat_fit': fit_params})
 
-    qa_data = {'source_list': source_lines}
+    qa_data = {'source_list': source_info}
 
     dest = file.replace('outputdirectory', 'quickanalysis')\
               .replace('EVA-', 'quickanalysis-')\
