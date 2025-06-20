@@ -250,14 +250,14 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
             except:
                 logging.info(traceback.format_exc())
 
-        # Upload quickanalysis json
-        tempfilename = file.replace('outputdirectory', 'quickanalysis').replace('.fits', '.json').replace('EVA-',
+        # Upload quickanalysis QAJSON
+        tempfilename = file.replace('outputdirectory', 'quickanalysis').replace('.fits', '.qajson').replace('EVA-',
                               'quickanalysis-').replace(
             'SmSTACK-', 'quickanalysisSmSTACK-').replace('LoSTACK-', 'quickanalysisLoSTACK-')
         if os.path.exists(tempfilename):
 
             if local_copy:
-                shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/quickanalysis/' + tempfilename.split('/')[-1].replace('.json',seq_number+'.json'))
+                shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/quickanalysis/' + tempfilename.split('/')[-1].replace('.qajson',seq_number+'.qajson'))
 
             headerdict['RLEVEL'] = 72
             try:

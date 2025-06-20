@@ -144,8 +144,8 @@ def multiprocess_final_image_construction_smartstack(file, base):
     tempheader['IMGMED'] = (bn.nanmedian(imagedata), 'Median Value of Image Array')
     tempheader['IMGMAD'] = (median_absolute_deviation(imagedata, ignore_nan=True), 'Median Absolute Deviation of Image Array')
     tempheader['IMGSTDEV'] = (bn.nanstd(imagedata), 'Standard Deviation of Image Array')
-    tempheader['QANAME']=filenameonly.replace('.fits','.json').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
-    tempheader['QANAME']=filenameonly.replace('.fits','.json').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
+    tempheader['QANAME']=filenameonly.replace('.fits','.qajson').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
+    tempheader['QANAME']=filenameonly.replace('.fits','.qajson').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
 
     dest = Path(base) / 'outputdirectory' / filenameonly
     fits.writeto(dest, imagedata, tempheader, output_verify='silentfix', overwrite=True)
@@ -1379,7 +1379,7 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
 
 
 def make_quickanalysis_file(file):
-    """Create a quickanalysis JSON from photometry files."""
+    """Create a quickanalysis QAJSON from photometry files."""
     temp_header = fits.getheader(file, memmap=False)
     if temp_header.get('EXPTIME', 0) < 1:
         logging.info("Not making quickanalysis file as it isn't a file to be ingested")
@@ -1469,7 +1469,7 @@ def make_quickanalysis_file(file):
               .replace('EVA-', 'quickanalysis-')\
               .replace('SmSTACK-', 'quickanalysisSmSTACK-')\
               .replace('LoSTACK-', 'quickanalysisLoSTACK-')\
-              .replace('.fits', '.json')
+              .replace('.fits', '.qajson')
 
     os.makedirs(os.path.dirname(dest), exist_ok=True)
     with open(dest + '.temp', 'w') as fp:
