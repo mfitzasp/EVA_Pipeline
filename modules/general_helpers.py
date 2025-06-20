@@ -529,44 +529,42 @@ def hard_drive_activity(drive):
     return float(output[2])
 
 
-def wait_for_resources(memory_fraction=70, cpu_fraction=50, wait_for_harddrive=False, workdrive=None):
-    
-    # A delaying mechanism that will random push itself forward in the future
-    # but at some point... the show must go on! So it will release itself. 
-    # It is possible for things to stall for hours if it just waits forever
-    # But if it barges itself into the proceedings it can at least keep moving
-    # and get there in the end. 
-        
-    random_timeout_period= random.randint(1800, 7200)
-    
-    file_wait_timeout_timer=time.time()
-    vert_timer=time.time()
-    if wait_for_harddrive:
-        
-        cpu_usage=psutil.cpu_percent(interval=1)
-        memory_usage=psutil.virtual_memory().percent
-        hard_drive_usage=hard_drive_activity(workdrive)        
-        
-        while memory_usage > memory_fraction or cpu_usage > cpu_fraction and (time.time()-file_wait_timeout_timer < random_timeout_period) and hard_drive_usage > 10000:       
-            
-            if time.time()-vert_timer > 30:
-                logging.info('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage) + "HD: "+str(hard_drive_usage) + " " + str(datetime.now()))
-                
-                vert_timer=time.time()
-            time.sleep(1)
-            cpu_usage=psutil.cpu_percent(interval=1)
-            memory_usage=psutil.virtual_memory().percent
-            hard_drive_usage=hard_drive_activity(workdrive)
-            
-    else:
-        cpu_usage=psutil.cpu_percent(interval=1)
-        memory_usage=psutil.virtual_memory().percent
-        while memory_usage > memory_fraction or cpu_usage > cpu_fraction and (time.time()-file_wait_timeout_timer < random_timeout_period):       
-            
-            if time.time()-vert_timer > 30:
-                #print('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage)+ " " + str(datetime.now()))
-                logging.info('Waiting: Mem: ' + str(memory_usage) + ' CPU: '+ str(cpu_usage)+ " " + str(datetime.now()))
-                vert_timer=time.time()
-            time.sleep(1)
-            cpu_usage=psutil.cpu_percent(interval=1)
-            memory_usage=psutil.virtual_memory().percent
+def wait_for_resources(memory_fraction=70, cpu_fraction=50, wait_for_harddrive=False, workdrive=None, max_wait=7200):
+    """Block until system resources drop below thresholds or a timeout occurs."""
+
+    # Randomised wait up to ``max_wait`` seconds helps spread out processes that
+    # start at the same time while ensuring we eventually continue.
+    random_timeout_period = random.randint(1800, max_wait)
+
+    start_time = time.time()
+    vert_timer = start_time
+
+    def log_wait(mem, cpu, hd=None):
+        if time.time() - vert_timer > 30:
+            msg = f"Waiting: Mem: {mem} CPU: {cpu}"
+            if hd is not None:
+                msg += f" HD: {hd}"
+            msg += f" {datetime.now()}"
+            logging.info(msg)
+            return time.time()
+        return vert_timer
+
+    while True:
+        cpu_usage = psutil.cpu_percent(interval=1)
+        memory_usage = psutil.virtual_memory().percent
+
+        hard_drive_usage = None
+        if wait_for_harddrive and workdrive:
+            hard_drive_usage = hard_drive_activity(workdrive)
+
+        if ((memory_usage <= memory_fraction) and
+            (cpu_usage <= cpu_fraction) and
+            (hard_drive_usage is None or hard_drive_usage <= 10000)):
+            break
+
+        if time.time() - start_time >= random_timeout_period:
+            logging.info("Resource wait timeout reached; continuing execution.")
+            break
+
+        vert_timer = log_wait(memory_usage, cpu_usage, hard_drive_usage)
+        time.sleep(1)

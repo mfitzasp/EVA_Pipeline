@@ -355,7 +355,7 @@ def pre_astrometry(tdir, headers, cfg, args):
     files = [str(p) for p in Path(tdir).glob('FLATTED*.npy')]
     n2 = max(1, min(math.floor(cpu*0.25), len(files)))
 
-    args_list = [(f, cfg['codedir']) for f in files]
+    args_list = [(f, cfg['codedir'], cfg.get('astrometry_timeout', 900)) for f in files]
 
     with Pool(n2) as p:
         results = p.starmap(run_astrometry_net, args_list)
