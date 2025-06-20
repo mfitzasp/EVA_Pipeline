@@ -33,6 +33,7 @@ from astropy.io import fits
 import traceback
 from astropy import wcs
 import bottleneck as bn
+from astropy.stats import median_absolute_deviation
 import math
 import os
 from multiprocessing.pool import Pool
@@ -897,8 +898,28 @@ def smart_stack(fileList, telescope, basedirectory, memmappath, calibration_dire
         except:
             logging.info ("did not do cosmics. Usually 'cause the gain, readnoise or pixel scale is unknown")
 
+
     # Interpolate any remaining nans
     finalImage=interpolate_replace_nans(finalImage,kernel)
+
+    # Basic image statistics
+    try:
+        int_array = finalImage.ravel()[~np.isnan(finalImage.ravel())].astype(int)
+        if int_array.size:
+            unique, counts = np.unique(int_array, return_counts=True)
+            mode_val = unique[counts.argmax()]
+        else:
+            mode_val = np.nan
+    except Exception:
+        mode_val = np.nan
+
+    newheader['IMGMIN'] = (bn.nanmin(finalImage), 'Minimum Value of Image Array')
+    newheader['IMGMAX'] = (bn.nanmax(finalImage), 'Maximum Value of Image Array')
+    newheader['IMGMEAN'] = (bn.nanmean(finalImage), 'Mean Value of Image Array')
+    newheader['IMGMODE'] = (mode_val, 'Mode Value of Image Array')
+    newheader['IMGMED'] = (bn.nanmedian(finalImage), 'Median Value of Image Array')
+    newheader['IMGMAD'] = (median_absolute_deviation(finalImage, ignore_nan=True), 'Median Absolute Deviation of Image Array')
+    newheader['IMGSTDEV'] = (bn.nanstd(finalImage), 'Standard Deviation of Image Array')
 
     #Scaling image appropriately
     expHolder=np.asarray(expHolder)

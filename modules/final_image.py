@@ -30,6 +30,8 @@ Paper on OSSPipeline: https://rtsre.org/index.php/rtsre/article/view/12/12
 
 from astropy.io import fits
 from astropy.convolution import Gaussian2DKernel, interpolate_replace_nans
+from astropy.stats import median_absolute_deviation
+import bottleneck as bn
 
 import sep
 import copy
@@ -123,6 +125,25 @@ def multiprocess_final_image_construction_smartstack(file, base):
     tempheader['PSXNAME']=filenameonly.replace('.fits','.psx').replace('EVA-','psxphot-').replace('SmSTACK-','psxphotSmSTACK-')
     tempheader['SEANAME']=filenameonly.replace('.fits','.sea').replace('EVA-','seaphot-').replace('SmSTACK-','seaphotSmSTACK-')
     tempheader['SEKNAME']=filenameonly.replace('.fits','.sek').replace('EVA-','sekphot-').replace('SmSTACK-','sekphotSmSTACK-')
+
+    # Basic image statistics
+    try:
+        int_array = imagedata.ravel()[~np.isnan(imagedata.ravel())].astype(int)
+        if int_array.size:
+            unique, counts = np.unique(int_array, return_counts=True)
+            mode_val = unique[counts.argmax()]
+        else:
+            mode_val = np.nan
+    except Exception:
+        mode_val = np.nan
+
+    tempheader['IMGMIN'] = (bn.nanmin(imagedata), 'Minimum Value of Image Array')
+    tempheader['IMGMAX'] = (bn.nanmax(imagedata), 'Maximum Value of Image Array')
+    tempheader['IMGMEAN'] = (bn.nanmean(imagedata), 'Mean Value of Image Array')
+    tempheader['IMGMODE'] = (mode_val, 'Mode Value of Image Array')
+    tempheader['IMGMED'] = (bn.nanmedian(imagedata), 'Median Value of Image Array')
+    tempheader['IMGMAD'] = (median_absolute_deviation(imagedata, ignore_nan=True), 'Median Absolute Deviation of Image Array')
+    tempheader['IMGSTDEV'] = (bn.nanstd(imagedata), 'Standard Deviation of Image Array')
     tempheader['QANAME']=filenameonly.replace('.fits','.json').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
     tempheader['QANAME']=filenameonly.replace('.fits','.json').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
 
@@ -1180,8 +1201,15 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
                     banzai_image_header['L1SIGMA'] = ( eva_image_header['L1SIGMA']  ,'[counts] Robust std dev of frame background')
                     banzai_image_header['L1FWHM']  = ( eva_image_header['FWHMasec'] ,'[arcsec] Frame FWHM in arcsec')
                     banzai_image_header['L1FWTM']  = ( eva_image_header['L1FWTM']  ,'Ratio of FWHM to Full-Width Tenth Max')
-                    banzai_image_header['L1ELLIP'] = ( eva_image_header['L1ELLIP']  ,'Mean image ellipticity (1-B/A)')
-                    banzai_image_header['L1ELLIPA']= ( eva_image_header['L1ELLIPA']  ,'[deg] PA of mean image ellipticity')
+                banzai_image_header['L1ELLIP'] = ( eva_image_header['L1ELLIP']  ,'Mean image ellipticity (1-B/A)')
+                banzai_image_header['L1ELLIPA']= ( eva_image_header['L1ELLIPA']  ,'[deg] PA of mean image ellipticity')
+                banzai_image_header['IMGMIN']= ( eva_image_header['IMGMIN'] ,'Minimum Value of Image Array')
+                banzai_image_header['IMGMAX']= ( eva_image_header['IMGMAX'] ,'Maximum Value of Image Array')
+                banzai_image_header['IMGMEAN']= ( eva_image_header['IMGMEAN'] ,'Mean Value of Image Array')
+                banzai_image_header['IMGMODE']= ( eva_image_header['IMGMODE'] ,'Mode Value of Image Array')
+                banzai_image_header['IMGMED']= ( eva_image_header['IMGMED'] ,'Median Value of Image Array')
+                banzai_image_header['IMGMAD']= ( eva_image_header['IMGMAD'] ,'Median Absolute Deviation of Image Array')
+                banzai_image_header['IMGSTDEV']= ( eva_image_header['IMGSTDEV'] ,'Standard Deviation of Image Array')
                     if 'CRVAL1' in eva_image_header.keys():
                         banzai_image_header['WCSERR']  = ( 0 ,'Error status of WCS fit. 0 for no error')
                     else:
@@ -1199,6 +1227,13 @@ def make_banzai_file_out_of_EVA(file, telescope, basedirectory, calibration_dire
                     banzai_image_header['L1FWTM']  = (   'UNKNOWN' ,'Ratio of FWHM to Full-Width Tenth Max')
                     banzai_image_header['L1ELLIP'] = (  0.0 ,'Mean image ellipticity (1-B/A)')
                     banzai_image_header['L1ELLIPA']= (   0.0 ,'[deg] PA of mean image ellipticity')
+                    banzai_image_header['IMGMIN']=   ( 0.0 ,'Minimum Value of Image Array')
+                    banzai_image_header['IMGMAX']=   ( 0.0 ,'Maximum Value of Image Array')
+                    banzai_image_header['IMGMEAN']=  ( 0.0 ,'Mean Value of Image Array')
+                    banzai_image_header['IMGMODE']=  ( 0.0 ,'Mode Value of Image Array')
+                    banzai_image_header['IMGMED']=   ( 0.0 ,'Median Value of Image Array')
+                    banzai_image_header['IMGMAD']=   ( 0.0 ,'Median Absolute Deviation of Image Array')
+                    banzai_image_header['IMGSTDEV']= ( 0.0 ,'Standard Deviation of Image Array')
                     if 'CRVAL1' in eva_image_header.keys():
                         banzai_image_header['WCSERR']  = ( 0 ,'Error status of WCS fit. 0 for no error')
                     else:
