@@ -1406,9 +1406,9 @@ def make_quickanalysis_file(file):
         image_data = None
 
     if src_path:
-        # Read all sources and optionally trim to the brightest 500 if there are
+        # Read all sources and optionally trim to the brightest 100 if there are
         # an excessive number of detections.  This avoids massive JSON files
-        # when more than 100,000 sources are detected in a frame.
+        # when more than 100 sources are detected in a frame.
         detections = []
         with open(src_path, 'r') as f:
             header_read = False
@@ -1419,7 +1419,7 @@ def make_quickanalysis_file(file):
                 if line.strip() and not line.startswith('#'):
                     detections.append(line.strip())
 
-        if len(detections) > 600:
+        if len(detections) > 101:
             def _count_val(l):
                 try:
                     return float(l.split(',')[4])
@@ -1427,7 +1427,7 @@ def make_quickanalysis_file(file):
                     return float('-inf')
 
             detections.sort(key=_count_val, reverse=True)
-            detections = detections[:500]
+            detections = detections[:100]
 
         for raw in detections:
             profile = []
