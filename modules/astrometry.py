@@ -431,7 +431,7 @@ def run_astrometry_net(file, codedir, timeout=900):
     # Make sure sources cover all of the image. Limit the catalogue to the
     # brightest sources so overly large catalogues do not slow down the WCS
     # checks.  Sort by flux (column 2) in descending order and keep at most the
-    # top 1000 entries before measuring the source spread.
+    # top 5000 entries before measuring the source spread.
     numpy_sources = np.column_stack(
         (
             np.array(acatalog['X_IMAGE']),
@@ -439,8 +439,8 @@ def run_astrometry_net(file, codedir, timeout=900):
             np.array(acatalog['FLUX_AUTO']),
         )
     )
-    if len(numpy_sources) > 1000:
-        numpy_sources = numpy_sources[numpy_sources[:, 2].argsort()[::-1]][:1000]
+    if len(numpy_sources) > 5000:
+        numpy_sources = numpy_sources[numpy_sources[:, 2].argsort()[::-1]][:5000]
 
     source_spreads, source_catalogues = get_source_spread_through_catalogue(numpy_sources)
 
