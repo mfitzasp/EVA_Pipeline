@@ -227,6 +227,9 @@ def de_fz_file(infopacket, base):
         
         
 
+        if not header_is_valid(file):
+            return None
+
         hdul = fits.open(file, ignore_missing_end=True)
         hdul.verify('fix')
         try:
@@ -519,6 +522,26 @@ def check_that_file_opens(file, script_path='filechecker.py', python_command='/u
         except:
             pass
         return 'failed'
+
+def header_is_valid(file):
+    """Quickly check whether a FITS header can be parsed.
+
+    Parameters
+    ----------
+    file : str
+        Path to the FITS file.
+
+    Returns
+    -------
+    bool
+        ``True`` if the header is readable, ``False`` otherwise.
+    """
+    try:
+        fits.getheader(file, ignore_missing_end=True)
+        return True
+    except Exception as exc:
+        logging.info(f"{file} header check failed: {exc}")
+        return False
 
 def hard_drive_activity(drive):
     output = subprocess.check_output(["iostat","-y" ,"5","1","|","grep",drive])
