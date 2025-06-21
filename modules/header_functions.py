@@ -122,6 +122,7 @@ def value_add_header(header, telescope):
     if not any("OSCCAM" in s for s in header.keys()):
         header['OSCCAM'] = False
 
+
     if not any("DRZPIXSC" in s for s in header.keys()):
         header['DRZPIXSC'] = 0.74
 
