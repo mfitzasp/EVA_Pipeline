@@ -119,6 +119,12 @@ def value_add_header(header, telescope):
     if not any("RDNOISE" in s for s in header.keys()):
         header['RDNOISE']=10.0
 
+    if not any("OSCCAM" in s for s in header.keys()):
+        header['OSCCAM'] = False
+
+    if not any("DRZPIXSC" in s for s in header.keys()):
+        header['DRZPIXSC'] = 0.74
+
     header['OBJECT']=str(header['OBJECT'].replace('(','').replace(')',''))
     header['OBJECT']=str(header['OBJECT'].replace(' ',''))
     header['OBJECT']=str(header['OBJECT'].replace('1of2','').replace('2of2','').replace('1of3','').replace('2of3','').replace('3of3',''))
