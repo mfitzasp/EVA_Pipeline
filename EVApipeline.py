@@ -178,7 +178,10 @@ def prepare_local_output_dirs(files, cfg):
 
     for d in dayobs_set:
         base = Path(cfg['local_output_folder']) / d
-        for sub in ['fits', 'photometry', 'pngs', 'previews', 'thumbnails']:
+        for sub in [
+            'fits', 'photometry', 'pngs', 'previews', 'thumbnails',
+            'quickanalysis'
+        ]:
             (base / sub).mkdir(parents=True, exist_ok=True)
 
 
