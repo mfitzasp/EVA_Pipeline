@@ -428,9 +428,21 @@ def run_astrometry_net(file, codedir, timeout=900):
         for i, new_title in enumerate(new_column_titles):
             acatalog.rename_column(acatalog.colnames[i], new_title)
         
-    # Make sure sources cover all of the image
-    numpy_sources=np.column_stack((np.array(acatalog['X_IMAGE']), np.array(acatalog['Y_IMAGE']), np.array(acatalog['FLUX_AUTO'])))
-    source_spreads, source_catalogues=get_source_spread_through_catalogue(numpy_sources)
+    # Make sure sources cover all of the image. Limit the catalogue to the
+    # brightest sources so overly large catalogues do not slow down the WCS
+    # checks.  Sort by flux (column 2) in descending order and keep at most the
+    # top 1000 entries before measuring the source spread.
+    numpy_sources = np.column_stack(
+        (
+            np.array(acatalog['X_IMAGE']),
+            np.array(acatalog['Y_IMAGE']),
+            np.array(acatalog['FLUX_AUTO']),
+        )
+    )
+    if len(numpy_sources) > 1000:
+        numpy_sources = numpy_sources[numpy_sources[:, 2].argsort()[::-1]][:1000]
+
+    source_spreads, source_catalogues = get_source_spread_through_catalogue(numpy_sources)
 
     # Get the median variation in the array and the stdev
     if len(source_spreads) > 1:
