@@ -475,6 +475,16 @@ def enrich_build(headers, cfg, args, base):
     with Pool() as p:
         tasks = [(h, base) for h in headers]
         headers = p.starmap(multiprocess_crop_images_for_flatness, tasks)
+
+    # Ensure SMARTSTK exists before files are organised into smartstack
+    # directories. Some historical LCO headers may lack this field.
+    if args.telescope.strip().lower() == 'lco':
+        for h in headers:
+            if 'SMARTSTK' not in h:
+                reqnum = str(h.get('REQNUM', '')).strip()
+                filt = str(h.get('FILTER', '')).split('_')[-1]
+                h['SMARTSTK'] = 'lco' + reqnum + filt
+
     return headers, human_names
 
 def construct_images(headers, human_names, cfg, args, base):
