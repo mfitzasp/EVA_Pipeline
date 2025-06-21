@@ -361,14 +361,18 @@ def pre_astrometry(tdir, headers, cfg, args):
     args_list = [(f, cfg['codedir'], astrometry_timeout) for f in files]
 
     results = []
-    with ProcessPoolExecutor(max_workers=n2) as executor:
+    executor = ProcessPoolExecutor(max_workers=n2)
+    try:
         futures = [executor.submit(run_astrometry_net, *a) for a in args_list]
         for f, fut in zip(files, futures):
             try:
                 results.append(fut.result(timeout=run_timeout))
             except FuturesTimeoutError:
                 logging.info("Astrometry timed out for %s", f)
+                fut.cancel()
                 results.append((Path(f).name.split('PIXSCALE')[-1], None))
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
 
     # Map returned WCS headers back to their originating FITS files
     wcs_map = {name: hdr for name, hdr in results if hdr}
