@@ -87,6 +87,10 @@ def value_add_header(header, telescope):
         dict: Updated FITS header.
     """
 
+    # Normalize telescope parameter to avoid issues with trailing whitespace or
+    # case sensitivity when comparing against 'lco'
+    telescope = telescope.strip().lower()
+
     header['BZERO']=0
     header['BSCALE']=1
     if not any("PEDESTAL" in s for s in header.keys()):
@@ -323,13 +327,15 @@ def value_add_header(header, telescope):
     # So we incorporate the bayer filter code into the smartstack code
     if telescope != 'lco':
         if header['OSCCAM'] == True and not header['SMARTSTK'] == 'no':
-            header['SMARTSTK']=header['SMARTSTK'] + str(header['FILTER']).split('_')[-1]
-            logging.info (header['FILTER'])
-            logging.info (header['SMARTSTK'])
+            header['SMARTSTK'] = str(header['SMARTSTK']) + str(header['FILTER']).split('_')[-1]
+            logging.info(header['FILTER'])
+            logging.info(header['SMARTSTK'])
     else:
-        header['SMARTSTK']='lco'+header['REQNUM'] + str(header['FILTER']).split('_')[-1]
-        logging.info (header['FILTER'])
-        logging.info (header['SMARTSTK'])
+        reqnum = str(header['REQNUM']).strip()
+        filt = str(header['FILTER']).split('_')[-1]
+        header['SMARTSTK'] = 'lco' + reqnum + filt
+        logging.info(header['FILTER'])
+        logging.info(header['SMARTSTK'])
         
         # include a couple of header items not included in lco
         header['EXPREQ'] =header['REQTIME'] 
