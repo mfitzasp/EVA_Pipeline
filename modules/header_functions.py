@@ -87,6 +87,10 @@ def value_add_header(header, telescope):
         dict: Updated FITS header.
     """
 
+    # Normalize telescope parameter to avoid issues with trailing whitespace or
+    # case sensitivity when comparing against 'lco'
+    telescope = telescope.strip().lower()
+
     header['BZERO']=0
     header['BSCALE']=1
     if not any("PEDESTAL" in s for s in header.keys()):
