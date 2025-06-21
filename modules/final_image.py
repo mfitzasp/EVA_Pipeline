@@ -1406,6 +1406,10 @@ def make_quickanalysis_file(file):
         image_data = None
 
     if src_path:
+        # Read all sources and optionally trim to the brightest 500 if there are
+        # an excessive number of detections.  This avoids massive JSON files
+        # when more than 100,000 sources are detected in a frame.
+        detections = []
         with open(src_path, 'r') as f:
             header_read = False
             for line in f:
@@ -1413,18 +1417,30 @@ def make_quickanalysis_file(file):
                     header_read = True
                     continue
                 if line.strip() and not line.startswith('#'):
-                    raw = line.strip()
-                    profile = []
-                    fit_params = None
-                    try:
-                        parts = [float(x) for x in raw.split(',')]
-                        xpix, ypix = parts[2], parts[3]
-                        if image_data is not None:
-                            profile = _radial_profile(image_data, (xpix, ypix), rmax)
-                            fit_params = _fit_moffat(profile)
-                    except Exception:
-                        pass
-                    source_info.append({'raw': raw, 'profile': profile, 'moffat_fit': fit_params})
+                    detections.append(line.strip())
+
+        if len(detections) > 100000:
+            def _count_val(l):
+                try:
+                    return float(l.split(',')[4])
+                except Exception:
+                    return float('-inf')
+
+            detections.sort(key=_count_val, reverse=True)
+            detections = detections[:500]
+
+        for raw in detections:
+            profile = []
+            fit_params = None
+            try:
+                parts = [float(x) for x in raw.split(',')]
+                xpix, ypix = parts[2], parts[3]
+                if image_data is not None:
+                    profile = _radial_profile(image_data, (xpix, ypix), rmax)
+                    fit_params = _fit_moffat(profile)
+            except Exception:
+                pass
+            source_info.append({'raw': raw, 'profile': profile, 'moffat_fit': fit_params})
 
     qa_data = {'source_list': source_info}
 
