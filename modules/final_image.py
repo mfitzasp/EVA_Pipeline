@@ -1419,7 +1419,7 @@ def make_quickanalysis_file(file):
                 if line.strip() and not line.startswith('#'):
                     detections.append(line.strip())
 
-        if len(detections) > 100000:
+        if len(detections) > 600:
             def _count_val(l):
                 try:
                     return float(l.split(',')[4])
