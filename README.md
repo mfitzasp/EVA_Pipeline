@@ -16,3 +16,8 @@ to a ``successful_token`` directory.
 The pipeline automatically detects this token file when running in
 ``generic`` mode.
 
+When generating quickanalysis QAJSON files, only the brightest 500 sources
+are profiled if more than 100,000 detections are present in the photometry
+catalogue. This keeps the quickanalysis files manageable on extremely
+dense fields.
+
