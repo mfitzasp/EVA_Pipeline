@@ -257,7 +257,16 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
         if os.path.exists(tempfilename):
 
             if local_copy:
-                shutil.copy(tempfilename, local_output_folder + '/' + dayobs + '/quickanalysis/' + tempfilename.split('/')[-1].replace('.qajson',seq_number+'.qajson'))
+                os.makedirs(os.path.join(local_output_folder, dayobs, 'quickanalysis'), exist_ok=True)
+                shutil.copy(
+                    tempfilename,
+                    os.path.join(
+                        local_output_folder,
+                        dayobs,
+                        'quickanalysis',
+                        tempfilename.split('/')[-1].replace('.qajson', seq_number + '.qajson')
+                    )
+                )
 
             headerdict['RLEVEL'] = 72
             try:
