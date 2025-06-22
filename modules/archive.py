@@ -250,8 +250,8 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
             except:
                 logging.info(traceback.format_exc())
 
-        # Upload quickanalysis QAJSON
-        tempfilename = file.replace('outputdirectory', 'quickanalysis').replace('.fits', '.qajson').replace('EVA-',
+        # Upload quickanalysis QAJSON (as zip)
+        tempfilename = file.replace('outputdirectory', 'quickanalysis').replace('.fits', '.qajson.zip').replace('EVA-',
                               'quickanalysis-').replace(
             'SmSTACK-', 'quickanalysisSmSTACK-').replace('LoSTACK-', 'quickanalysisLoSTACK-')
         if os.path.exists(tempfilename):
@@ -264,7 +264,7 @@ def archive_preparer(file, largedataset_output_folder, shortexposure_output_fold
                         local_output_folder,
                         dayobs,
                         'quickanalysis',
-                        tempfilename.split('/')[-1].replace('.qajson', seq_number + '.qajson')
+                        tempfilename.split('/')[-1].replace('.qajson.zip', seq_number + '.qajson.zip')
                     )
                 )
 
