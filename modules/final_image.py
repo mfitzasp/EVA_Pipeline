@@ -48,6 +48,7 @@ from datetime import  timedelta
 import traceback
 import logging
 import json
+import zipfile
 kernel = Gaussian2DKernel(x_stddev=2,y_stddev=2)
 
 
@@ -144,8 +145,8 @@ def multiprocess_final_image_construction_smartstack(file, base):
     tempheader['IMGMED'] = (bn.nanmedian(imagedata), 'Median Value of Image Array')
     tempheader['IMGMAD'] = (median_absolute_deviation(imagedata, ignore_nan=True), 'Median Absolute Deviation of Image Array')
     tempheader['IMGSTDEV'] = (bn.nanstd(imagedata), 'Standard Deviation of Image Array')
-    tempheader['QANAME']=filenameonly.replace('.fits','.qajson').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
-    tempheader['QANAME']=filenameonly.replace('.fits','.qajson').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
+    tempheader['QANAME']=filenameonly.replace('.fits','.qajson.zip').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
+    tempheader['QANAME']=filenameonly.replace('.fits','.qajson.zip').replace('EVA-','quickanalysis-').replace('SmSTACK-','quickanalysisSmSTACK-')
 
     dest = Path(base) / 'outputdirectory' / filenameonly
     fits.writeto(dest, imagedata, tempheader, output_verify='silentfix', overwrite=True)
@@ -1481,13 +1482,16 @@ def make_quickanalysis_file(file):
         except Exception:
             pass
 
-    dest = file.replace('outputdirectory', 'quickanalysis')\
-              .replace('EVA-', 'quickanalysis-')\
-              .replace('SmSTACK-', 'quickanalysisSmSTACK-')\
-              .replace('LoSTACK-', 'quickanalysisLoSTACK-')\
-              .replace('.fits', '.qajson')
+    dest_base = file.replace('outputdirectory', 'quickanalysis')\
+                 .replace('EVA-', 'quickanalysis-')\
+                 .replace('SmSTACK-', 'quickanalysisSmSTACK-')\
+                 .replace('LoSTACK-', 'quickanalysisLoSTACK-')\
+                 .replace('.fits', '.qajson')
+    dest = dest_base + '.zip'
 
     os.makedirs(os.path.dirname(dest), exist_ok=True)
-    with open(dest + '.temp', 'w') as fp:
-        json.dump(qa_data, fp, indent=4)
+    json_data = json.dumps(qa_data, indent=4)
+    with zipfile.ZipFile(dest + '.temp', 'w', compression=zipfile.ZIP_DEFLATED,
+                        compresslevel=9) as zf:
+        zf.writestr(os.path.basename(dest_base), json_data)
     os.rename(dest + '.temp', dest)
