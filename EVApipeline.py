@@ -239,6 +239,7 @@ def collect_files(cfg, args, base, tokenfile=None):
     if args.mode == 'generic':
         info = json.load(open(Path(base)/'info_for_eva.json'))
         flist = []
+        missing = []
         for f in info['files_to_process']:
             splitfile=f.split('_')
             camname=splitfile[0].split('-')[1]
@@ -247,17 +248,9 @@ def collect_files(cfg, args, base, tokenfile=None):
             alt=Path(cfg['localptrarchivefolder'] +'/'+camname+'/'+filedate+'/'+f.replace('.fits.fz','.fits'))
 
             if not p.exists() and not alt.exists():
-                if not wait_for_file(p, altpath=alt, timeout=60 * 60):
-                    remove_token = token_is_older_than(Path(base).name)
-                    if remove_token and tokenfile:
-                        move_token_to_failed(tokenfile)
-                    cleanup_and_exit(
-                        os.path.expanduser('~'),
-                        base,
-                        original_token_file=tokenfile,
-                        remove_token=True
-                    )
-                    return []
+                if not wait_for_file(p, altpath=alt, timeout=6 * 60 * 60):
+                    missing.append(f)
+                    continue
 
             if p.suffixes[-2:] == ['.fits','.fz']:
                 # Sometimes, particularly if this is run twice or more
@@ -299,6 +292,22 @@ def collect_files(cfg, args, base, tokenfile=None):
                     flist.append(str(alt))
                 else:
                     logging.info ("Couldn't find file")
+        missing_count = len(missing)
+        total_expected = len(info['files_to_process'])
+        if missing_count:
+            arrived_ratio = 100 * (total_expected - missing_count) / total_expected
+            if arrived_ratio < 90 and missing_count > 2:
+                remove_token = token_is_older_than(Path(base).name)
+                if remove_token and tokenfile:
+                    move_token_to_failed(tokenfile)
+                cleanup_and_exit(
+                    os.path.expanduser('~'),
+                    base,
+                    original_token_file=tokenfile,
+                    remove_token=True
+                )
+                return []
+            logging.info(f"Proceeding with {total_expected - missing_count} of {total_expected} files")
         return flist
 
     # if neither of them then return the files in the root of the current basedirectory
