@@ -715,11 +715,15 @@ def main():
         
         
         if args.mode == 'generic':
-            move_token_to_successful(
-                tokenfile,
-                cfg['local_output_folder'],
-                cfg['localptrarchivefolder']
-            )
+            try:
+                move_token_to_successful(
+                    tokenfile,
+                    cfg['local_output_folder'],
+                    cfg['localptrarchivefolder']
+                )
+            except:
+                logging.info("Couldn't get rid of token")
+                logging.info (traceback.format_exc())
             # Make doubly sure it is moved. 
             try:
                 os.remove(tokenfile)
