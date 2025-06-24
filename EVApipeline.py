@@ -707,8 +707,18 @@ def main():
     # Make BANZAI files
     wait_for_resources_cfg(cfg)
     do_banzai_file_type(cfg, args.telescope, base)
-        
+
     do_archive(cfg, base)
+
+    if args.mode == 'generic':
+        if tokenfile:
+            try:
+                os.remove(tokenfile)
+                logging.info('Removed tokenfile %s', tokenfile)
+            except Exception as e:
+                logging.warning('Failed to remove tokenfile %s: %s', tokenfile, e)
+        else:
+            logging.info('No tokenfile found to remove')
 
 
     if not args.rundate == 'localfolder':
