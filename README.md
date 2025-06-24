@@ -15,6 +15,8 @@ Upon successful completion, the token file stored in
 ``cfg['localptrarchivefolder']/tokens`` is moved to
 ``EVAreducedfiles/successfultokens``.
 
+If a token cannot be moved into these directories it is deleted instead.
+
 The pipeline automatically detects this token file when running in
 ``generic`` mode.
 
