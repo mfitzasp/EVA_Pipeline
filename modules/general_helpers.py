@@ -426,11 +426,16 @@ def token_is_older_than(token_name, days=30):
 
     return (datetime.utcnow().date() - tdate) > timedelta(days=days)
 
-def move_token_to_failed(token_file):
-    """Move ``token_file`` into a ``failed_tokens`` directory next to it."""
+def move_token_to_failed(token_file, output_root=None, token_root=None):
+    """Move ``token_file`` from the ``tokens`` directory into ``failedtokens``."""
 
     tpath = Path(token_file)
-    dest_dir = tpath.parent / 'failed_tokens'
+    if token_root:
+        tpath = Path(token_root) / 'tokens' / tpath.name
+    if output_root:
+        dest_dir = Path(output_root) / 'failedtokens'
+    else:
+        dest_dir = tpath.parent / 'failed_tokens'
     try:
         dest_dir.mkdir(parents=True, exist_ok=True)
         shutil.move(str(tpath), dest_dir / tpath.name)
@@ -438,11 +443,16 @@ def move_token_to_failed(token_file):
     except Exception as e:
         logging.info(f"Failed to move token file '{tpath}': {e}")
 
-def move_token_to_successful(token_file):
-    """Move ``token_file`` into a ``successful_token`` directory next to it."""
+def move_token_to_successful(token_file, output_root=None, token_root=None):
+    """Move ``token_file`` from the ``tokens`` directory into ``successfultokens``."""
 
     tpath = Path(token_file)
-    dest_dir = tpath.parent / 'successful_token'
+    if token_root:
+        tpath = Path(token_root) / 'tokens' / tpath.name
+    if output_root:
+        dest_dir = Path(output_root) / 'successfultokens'
+    else:
+        dest_dir = tpath.parent / 'successful_token'
     try:
         dest_dir.mkdir(parents=True, exist_ok=True)
         shutil.move(str(tpath), dest_dir / tpath.name)

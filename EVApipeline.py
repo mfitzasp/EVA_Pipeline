@@ -299,7 +299,11 @@ def collect_files(cfg, args, base, tokenfile=None):
             if arrived_ratio < 90 and missing_count > 2:
                 remove_token = token_is_older_than(Path(base).name)
                 if remove_token and tokenfile:
-                    move_token_to_failed(tokenfile)
+                    move_token_to_failed(
+                        tokenfile,
+                        cfg['local_output_folder'],
+                        cfg['localptrarchivefolder']
+                    )
                 cleanup_and_exit(
                     os.path.expanduser('~'),
                     base,
@@ -709,7 +713,11 @@ def main():
 
     if not args.rundate == 'localfolder':
         if tokenfile:
-            move_token_to_successful(tokenfile)
+            move_token_to_successful(
+                tokenfile,
+                cfg['local_output_folder'],
+                cfg['localptrarchivefolder']
+            )
         cleanup_and_exit(
             os.path.expanduser('~'),
             base,
