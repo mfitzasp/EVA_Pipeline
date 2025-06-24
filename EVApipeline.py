@@ -710,17 +710,6 @@ def main():
 
     do_archive(cfg, base)
 
-    if args.mode == 'generic':
-        if tokenfile:
-            try:
-                os.remove(tokenfile)
-                logging.info('Removed tokenfile %s', tokenfile)
-            except Exception as e:
-                logging.warning('Failed to remove tokenfile %s: %s', tokenfile, e)
-        else:
-            logging.info('No tokenfile found to remove')
-
-
     if not args.rundate == 'localfolder':
         #if tokenfile:
         
@@ -736,7 +725,7 @@ def main():
                 os.remove(tokenfile)
                 logging.info('Removed tokenfile %s', tokenfile)
             except Exception as e:
-                logging.warning('Failed to remove tokenfile %s: %s', tokenfile, e)
+                logging.warning('Tokenfile already gone %s: %s', tokenfile, e)
         
         cleanup_and_exit(
             os.path.expanduser('~'),
