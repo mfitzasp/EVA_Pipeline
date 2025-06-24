@@ -153,7 +153,7 @@ def get_tokenfile_from_info(base):
     if info_path.exists():
         try:
             info = json.load(open(info_path))
-            return info.get('tokenfile') or info.get('token_file')
+            return info.get('original_token_file')
         except Exception:
             pass
     return None
@@ -734,6 +734,8 @@ def main():
             original_token_file=tokenfile,
             remove_token=False
         )
+
+    
 
 
 if __name__ == '__main__':
