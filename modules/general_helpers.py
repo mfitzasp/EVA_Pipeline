@@ -432,16 +432,22 @@ def move_token_to_failed(token_file, output_root=None, token_root=None):
     tpath = Path(token_file)
     if token_root:
         tpath = Path(token_root) / 'tokens' / tpath.name
-    if output_root:
-        dest_dir = Path(output_root) / 'failedtokens'
-    else:
-        dest_dir = tpath.parent / 'failed_tokens'
-    try:
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(tpath), dest_dir / tpath.name)
-        logging.info(f"Token file '{tpath}' moved to '{dest_dir}'.")
-    except Exception as e:
-        logging.info(f"Failed to move token file '{tpath}': {e}")
+    dest_dir = Path(output_root) / 'failedtokens' if output_root else None
+    moved = False
+    if dest_dir:
+        try:
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(tpath), dest_dir / tpath.name)
+            logging.info(f"Token file '{tpath}' moved to '{dest_dir}'.")
+            moved = True
+        except Exception as e:
+            logging.info(f"Failed to move token file '{tpath}': {e}")
+    if not moved:
+        try:
+            tpath.unlink()
+            logging.info(f"Token file '{tpath}' deleted.")
+        except Exception as e:
+            logging.info(f"Failed to delete token file '{tpath}': {e}")
 
 def move_token_to_successful(token_file, output_root=None, token_root=None):
     """Move ``token_file`` from the ``tokens`` directory into ``successfultokens``."""
@@ -449,16 +455,22 @@ def move_token_to_successful(token_file, output_root=None, token_root=None):
     tpath = Path(token_file)
     if token_root:
         tpath = Path(token_root) / 'tokens' / tpath.name
-    if output_root:
-        dest_dir = Path(output_root) / 'successfultokens'
-    else:
-        dest_dir = tpath.parent / 'successful_token'
-    try:
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(tpath), dest_dir / tpath.name)
-        logging.info(f"Token file '{tpath}' moved to '{dest_dir}'.")
-    except Exception as e:
-        logging.info(f"Failed to move token file '{tpath}': {e}")
+    dest_dir = Path(output_root) / 'successfultokens' if output_root else None
+    moved = False
+    if dest_dir:
+        try:
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(tpath), dest_dir / tpath.name)
+            logging.info(f"Token file '{tpath}' moved to '{dest_dir}'.")
+            moved = True
+        except Exception as e:
+            logging.info(f"Failed to move token file '{tpath}': {e}")
+    if not moved:
+        try:
+            tpath.unlink()
+            logging.info(f"Token file '{tpath}' deleted.")
+        except Exception as e:
+            logging.info(f"Failed to delete token file '{tpath}': {e}")
 
 def wait_for_diskspace(directory="/", threshold=0.75, interval=5, timeout=3 * 60 * 60):
     """
