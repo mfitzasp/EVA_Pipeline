@@ -722,12 +722,22 @@ def main():
 
 
     if not args.rundate == 'localfolder':
-        if tokenfile:
+        #if tokenfile:
+        
+        
+        if args.mode == 'generic':
             move_token_to_successful(
                 tokenfile,
                 cfg['local_output_folder'],
                 cfg['localptrarchivefolder']
             )
+            # Make doubly sure it is moved. 
+            try:
+                os.remove(tokenfile)
+                logging.info('Removed tokenfile %s', tokenfile)
+            except Exception as e:
+                logging.warning('Failed to remove tokenfile %s: %s', tokenfile, e)
+        
         cleanup_and_exit(
             os.path.expanduser('~'),
             base,
