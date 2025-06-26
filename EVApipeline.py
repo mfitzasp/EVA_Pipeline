@@ -210,7 +210,7 @@ def download_phase(cfg, args, base):
         except:
             continue
         off = 0
-        while len(frames) % 1000 == 0 and frames:
+        while len(frames) % 1000 == 0 and frames and off < 10000:
             off += 1000
             url = f"{fe}&offset={off}"
             try:
@@ -218,6 +218,8 @@ def download_phase(cfg, args, base):
                 frames += page.get('results', [])
             except:
                 break
+        if off >= 10000 and len(frames) % 1000 == 0 and frames:
+            logging.info('Stopping pagination at offset 10000 for %s', fe)
         for fr in frames:
             # Save each downloaded file inside the working directory
             fr['filename'] = str(Path(base) / Path(fr['filename']).name)
