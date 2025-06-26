@@ -219,7 +219,8 @@ def download_phase(cfg, args, base):
             except:
                 break
         if off >= 10000 and len(frames) % 1000 == 0 and frames:
-            logging.info('Stopping pagination at offset 10000 for %s', fe)
+            logging.warning('Offset exceeded 10000 for %s, skipping downloads', fe)
+            continue
         for fr in frames:
             # Save each downloaded file inside the working directory
             fr['filename'] = str(Path(base) / Path(fr['filename']).name)
