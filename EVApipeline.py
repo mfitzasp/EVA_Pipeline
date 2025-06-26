@@ -224,9 +224,10 @@ def download_phase(cfg, args, base):
             queue_dl.put(fr)
     wait_for_diskspace(cfg['working_directory'], 0.9)
     def dl(item): return archive_downloader(item, session)
-    
+
     while not queue_dl.empty():
         batch = [queue_dl.get() for _ in range(min(8, queue_dl.qsize()))]
+        wait_for_resources_cfg(cfg)
         with ThreadPool(8) as tp:
             tp.map(dl, batch)
         for _ in batch:
@@ -398,11 +399,12 @@ def pre_astrometry(tdir, headers, cfg, args):
         
     return headers
 
-def header_merge(headers, base):
+def header_merge(headers, base, cfg):
     """
     Merge WCS and FWHM info into headers and relocate all .npy files
     from Targets to workingdirectory, renaming based on PIXSCALE suffix.
     """
+    wait_for_resources_cfg(cfg)
     targets_dir = Path(base) / 'Targets'
     working_dir = Path(base) / 'workingdirectory'
     working_dir.mkdir(parents=True, exist_ok=True)
@@ -689,11 +691,12 @@ def main():
     prepare_local_output_dirs(files, cfg)
     print (files)
     files, headers = check_and_deflate(files, cfg, args, base)
+    wait_for_resources_cfg(cfg)
     tdir = target_phase(base)
     # Pre-astrometry and WCS generation run inside Targets dir
     wait_for_resources_cfg(cfg)
     headers = pre_astrometry(tdir, headers, cfg, args)
-    headers = header_merge(headers, base)
+    headers = header_merge(headers, base, cfg)
     cleanup_intermediate(base)
     make_dirs_output(base)
     headers, human_names = enrich_build(headers, cfg, args, base)
