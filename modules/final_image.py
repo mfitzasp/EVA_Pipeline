@@ -1482,6 +1482,40 @@ def make_quickanalysis_file(file):
         except Exception:
             pass
 
+    # Histogram of the 8-bit PNG preview (if it exists)
+    png_file = file.replace('outputdirectory', 'previews')\
+                     .replace('EVA-', 'png-')\
+                     .replace('SmSTACK-', 'pngSmSTACK-')\
+                     .replace('LoSTACK-', 'pngLoSTACK-')\
+                     .replace('.fits', '.png')
+    if os.path.exists(png_file):
+        try:
+            with Image.open(png_file) as im:
+                im = im.convert('L')
+                arr = np.array(im)
+            u_png, c_png = np.unique(arr.ravel(), return_counts=True)
+            png_hist = [[int(u), int(c)] for u, c in zip(u_png, c_png)]
+            qa_data['png_histogram'] = png_hist
+        except Exception:
+            pass
+
+    # Histogram of the preview JPEG (if it exists)
+    jpg_file = file.replace('outputdirectory', 'previews')\
+                    .replace('EVA-', 'previewjpg-')\
+                    .replace('SmSTACK-', 'previewjpgSmSTACK-')\
+                    .replace('LoSTACK-', 'previewjpgLoSTACK-')\
+                    .replace('.fits', '.jpg')
+    if os.path.exists(jpg_file):
+        try:
+            with Image.open(jpg_file) as im:
+                im = im.convert('L')
+                arr = np.array(im)
+            u_jpg, c_jpg = np.unique(arr.ravel(), return_counts=True)
+            jpg_hist = [[int(u), int(c)] for u, c in zip(u_jpg, c_jpg)]
+            qa_data['previewjpg_histogram'] = jpg_hist
+        except Exception:
+            pass
+
     dest_base = file.replace('outputdirectory', 'quickanalysis')\
                  .replace('EVA-', 'quickanalysis-')\
                  .replace('SmSTACK-', 'quickanalysisSmSTACK-')\
